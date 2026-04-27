@@ -47,30 +47,6 @@ const VIEW_PRESET_STORAGE_KEY = 'magnamat-view-preset';
 /** Orbit radius only — applied after full view / code defaults so you can lock wheel zoom separately */
 const ZOOM_PRESET_STORAGE_KEY = 'magnamat-default-zoom';
 
-function loadViewPreset() {
-  try {
-    const raw = localStorage.getItem(VIEW_PRESET_STORAGE_KEY);
-    if (!raw) return null;
-    const p = JSON.parse(raw);
-    if (
-      p &&
-      p.v === 1 &&
-      typeof p.distance === 'number' &&
-      typeof p.polarDeg === 'number' &&
-      typeof p.azimuthDeg === 'number' &&
-      Array.isArray(p.target) &&
-      p.target.length === 3 &&
-      p.mat &&
-      typeof p.mat.x === 'number' &&
-      typeof p.mat.y === 'number' &&
-      typeof p.mat.z === 'number'
-    ) {
-      return p;
-    }
-  } catch (_) {}
-  return null;
-}
-
 function loadZoomOnlyPreset() {
   try {
     const raw = localStorage.getItem(ZOOM_PRESET_STORAGE_KEY);
@@ -119,7 +95,7 @@ function clearZoomPreset() {
 
 function formatZoomSnippet(camera, controls) {
   const d = THREE.MathUtils.clamp(orbitDistance(camera, controls), controls.minDistance, controls.maxDistance);
-  return `// Default orbit zoom — replace CAM_DISTANCE in startScene() (non–view-preset branch)\nconst CAM_DISTANCE = ${d.toFixed(5)};`;
+  return `// Default orbit zoom — replace CAM_DISTANCE in startScene() locked camera block\nconst CAM_DISTANCE = ${d.toFixed(5)};`;
 }
 
 function captureViewPreset(camera, controls, matGroup) {
@@ -164,7 +140,7 @@ function formatPresetAsMainSnippet(p) {
     `matGroup.rotation.y = ${f(p.mat.y)};`,
     `matGroup.rotation.z = ${f(p.mat.z)};`,
     '',
-    '// Then remove loadViewPreset() branch if you no longer want localStorage to override.',
+    '// startScene() uses this locked view for all visitors; paste over the CAM_* + orbitTarget + matGroup.rotation block.',
   ].join('\n');
 }
 
@@ -172,10 +148,13 @@ function installViewTuner(container, ctx) {
   if (!ctx.isAdjustMode) return;
 
   const { camera, controls, matGroup } = ctx;
+  const fixedSheet =
+    typeof window !== 'undefined' && window.matchMedia?.('(max-width: 767px)')?.matches;
   const wrap = document.createElement('div');
   wrap.className = 'view-tuner-panel';
-  wrap.style.cssText =
-    'position:absolute;left:8px;right:8px;bottom:8px;z-index:6;max-height:46%;overflow:auto;padding:12px 14px;border-radius:12px;background:rgba(255,255,255,0.96);border:1px solid rgba(0,0,0,0.1);font:12px/1.45 system-ui,-apple-system,sans-serif;box-shadow:0 8px 28px rgba(0,0,0,0.12);color:#141414;';
+  wrap.style.cssText = fixedSheet
+    ? 'position:fixed;left:0;right:0;bottom:0;z-index:220;max-height:min(48vh,380px);overflow:auto;padding:14px 16px calc(14px + env(safe-area-inset-bottom,0px));border-radius:16px 16px 0 0;background:rgba(255,255,255,0.98);border:1px solid rgba(0,0,0,0.1);border-bottom:none;font:12px/1.45 system-ui,-apple-system,sans-serif;box-shadow:0 -8px 32px rgba(22,22,22,0.12);color:#141414;'
+    : 'position:absolute;left:8px;right:8px;bottom:8px;z-index:6;max-height:46%;overflow:auto;padding:12px 14px;border-radius:12px;background:rgba(255,255,255,0.96);border:1px solid rgba(0,0,0,0.1);font:12px/1.45 system-ui,-apple-system,sans-serif;box-shadow:0 8px 28px rgba(0,0,0,0.12);color:#141414;';
 
   const title = document.createElement('div');
   title.textContent = '3D view lock-in (?adjust=1)';
@@ -183,8 +162,9 @@ function installViewTuner(container, ctx) {
 
   const hint = document.createElement('p');
   hint.style.cssText = 'margin:0 0 10px;color:#555;font-size:11px;line-height:1.45;';
-  hint.textContent =
-    'Orbit with drag; scroll zoom on the canvas. Save / Save default zoom write to this browser only (localStorage). To set the same angle for every visitor: click Copy main.mjs snippet, paste into startScene() over the default CAM_* + orbitTarget block and the else matGroup.rotation values, commit, deploy. Clear removes local overrides. Remove ?adjust=1 to hide this panel.';
+  hint.textContent = fixedSheet
+    ? 'Drag on the canvas to orbit; pinch with two fingers to zoom. “Save” keeps a backup on this device only — startScene() always uses the locked numbers in main.mjs. Ship a new default: Copy main.mjs snippet → paste over the CAM_* + orbitTarget + matGroup.rotation block → deploy. Remove ?adjust=1 to hide.'
+    : 'Orbit with drag; scroll zoom on the canvas. Save / Save default zoom write to localStorage (zoom-only still applies on load). Full view defaults live in main.mjs only: Copy main.mjs snippet → paste over the locked camera + matGroup.rotation block in startScene(), commit, deploy. Clear removes local overrides. Remove ?adjust=1 to hide this panel.';
 
   const readout = document.createElement('pre');
   readout.style.cssText =
@@ -214,7 +194,9 @@ function installViewTuner(container, ctx) {
     setTimeout(() => {
       bSave.textContent = 'Save as locked default';
     }, 1600);
-    console.info('[magnamat] View saved to localStorage. Reload the page (you can drop ?adjust=1) to confirm.');
+    console.info(
+      '[magnamat] View saved to localStorage (backup). To ship this angle, use Copy main.mjs snippet and paste into startScene(); reload alone does not change file defaults.'
+    );
   });
 
   const bSaveZoom = btn('Save default zoom', false);
@@ -265,7 +247,7 @@ function installViewTuner(container, ctx) {
   });
 
   wrap.append(title, hint, readout, bSave, bSaveZoom, bCopyZoom, bCopy, bClear);
-  container.appendChild(wrap);
+  (fixedSheet ? document.body : container).appendChild(wrap);
 
   controls.addEventListener('change', refreshReadout);
   refreshReadout();
@@ -366,9 +348,26 @@ function touchPrimaryOrNarrowForOrbit() {
   return false;
 }
 
+/** Tuning mode: accept adjust=1 / true / yes (case-insensitive); optional hash e.g. #adjust=1 */
+function isAdjustModeFromUrl(isSecondary) {
+  if (isSecondary || typeof window === 'undefined') return false;
+  const q = new URLSearchParams(window.location.search);
+  let raw = q.get('adjust');
+  if (raw == null && window.location.hash) {
+    let h = window.location.hash.replace(/^#/, '');
+    if (h.startsWith('?')) h = h.slice(1);
+    if (/^adjust=|[&?]adjust=/i.test(h)) {
+      raw = new URLSearchParams(h).get('adjust');
+    }
+  }
+  if (raw == null) return false;
+  const v = String(raw).trim().toLowerCase();
+  return v === '1' || v === 'true' || v === 'yes' || v === 'on';
+}
+
 function startScene(container, canvas, options = {}) {
   const isSecondary = options.secondary === true;
-  const isAdjustMode = !isSecondary && new URLSearchParams(window.location.search).get('adjust') === '1';
+  const isAdjustMode = isAdjustModeFromUrl(isSecondary);
 
   let { w: W, h: H } = readCanvasSize(container);
   if (W < 32 || H < 32) {
@@ -458,11 +457,15 @@ function startScene(container, canvas, options = {}) {
   controls.dampingFactor = 0.09;
   controls.autoRotate = false;
   controls.enablePan = false;
-  /* Wheel / pinch zoom only while tuning (?adjust=1); normal page keeps scroll for the document */
-  controls.enableZoom = isAdjustMode;
   function applyTouchOrbitPolicy() {
-    const lockRotate = touchPrimaryOrNarrowForOrbit() && !isAdjustMode;
-    controls.enableRotate = !lockRotate;
+    if (isAdjustMode) {
+      controls.enableRotate = true;
+      controls.enableZoom = true;
+      return;
+    }
+    /* Normal page: no wheel zoom on canvas; phones lock one-finger orbit so vertical scroll wins */
+    controls.enableZoom = false;
+    controls.enableRotate = !touchPrimaryOrNarrowForOrbit();
   }
   applyTouchOrbitPolicy();
   if (typeof window !== 'undefined' && window.matchMedia) {
@@ -477,45 +480,28 @@ function startScene(container, canvas, options = {}) {
       mqTouch.addListener(onOrbitMediaChange);
     }
   }
+
+  /* iOS: tabindex=0 canvas often eats the first tap for focus; tuning needs immediate orbit */
+  if (isAdjustMode && !isSecondary) {
+    canvas.tabIndex = -1;
+  }
   controls.minDistance = 5.5;
   controls.maxDistance = 28;
   /* Let you orbit more overhead without hitting the clamp */
   controls.minPolarAngle = 0.06;
   controls.maxPolarAngle = Math.PI / 2 - 0.04;
 
-  const viewPreset = loadViewPreset();
-
-  let orbitTarget;
-  let camSph;
-  if (viewPreset) {
-    orbitTarget = new THREE.Vector3(
-      viewPreset.target[0],
-      viewPreset.target[1],
-      viewPreset.target[2]
-    );
-    controls.target.copy(orbitTarget);
-    camSph = new THREE.Spherical(
-      viewPreset.distance,
-      THREE.MathUtils.degToRad(viewPreset.polarDeg),
-      THREE.MathUtils.degToRad(viewPreset.azimuthDeg)
-    );
-  } else {
-    orbitTarget = new THREE.Vector3(0, 0.1, 0);
-    controls.target.copy(orbitTarget);
-    /*
-     * DEFAULT CAMERA — only touch these three numbers (then refresh).
-     * Uses THREE.Spherical: phi = angle down from +Y (smaller ° = more bird’s-eye / “overhead”).
-     * azimuth = spin around Y (try ~115–140° for front-right vs front-left on the mat).
-     */
-    const CAM_DISTANCE = 16.35;
-    const CAM_POLAR_DEG = 38;
-    const CAM_AZIMUTH_DEG = 128;
-    camSph = new THREE.Spherical(
-      CAM_DISTANCE,
-      THREE.MathUtils.degToRad(CAM_POLAR_DEG),
-      THREE.MathUtils.degToRad(CAM_AZIMUTH_DEG)
-    );
-  }
+  /* Locked default orbit + target (same for every visitor; ?adjust=1 + Copy snippet to revise). */
+  const CAM_DISTANCE = 17.961961;
+  const CAM_POLAR_DEG = 77.844331;
+  const CAM_AZIMUTH_DEG = -94.868025;
+  const orbitTarget = new THREE.Vector3(0.000000, 0.100000, 0.000000);
+  controls.target.copy(orbitTarget);
+  const camSph = new THREE.Spherical(
+    CAM_DISTANCE,
+    THREE.MathUtils.degToRad(CAM_POLAR_DEG),
+    THREE.MathUtils.degToRad(CAM_AZIMUTH_DEG)
+  );
   camera.position.setFromSpherical(camSph).add(orbitTarget);
   camera.lookAt(orbitTarget);
   controls.update();
@@ -820,18 +806,11 @@ function startScene(container, canvas, options = {}) {
     { passive: true }
   );
 
-  /* Hero stack: bottom-left corner leads; opposite sign set from prior attempt (order YXZ) */
-  if (viewPreset) {
-    matGroup.rotation.order = viewPreset.mat.order || 'YXZ';
-    matGroup.rotation.x = viewPreset.mat.x;
-    matGroup.rotation.y = viewPreset.mat.y;
-    matGroup.rotation.z = viewPreset.mat.z;
-  } else {
-    matGroup.rotation.order = 'YXZ';
-    matGroup.rotation.y = THREE.MathUtils.degToRad(-47.5);
-    matGroup.rotation.x = THREE.MathUtils.degToRad(27);
-    matGroup.rotation.z = THREE.MathUtils.degToRad(12.5);
-  }
+  /* Locked default mat pose (order YXZ) */
+  matGroup.rotation.order = 'YXZ';
+  matGroup.rotation.x = 0.471239;
+  matGroup.rotation.y = -0.829031;
+  matGroup.rotation.z = 0.218166;
   hero3dRoot.add(matGroup);
 
   /* Dev: orbit to the angle you want, then run __magnamatScene.logDefaultAngle() in the console → paste into main.mjs */
@@ -844,7 +823,9 @@ function startScene(container, canvas, options = {}) {
         const p = captureViewPreset(camera, controls, matGroup);
         localStorage.setItem(VIEW_PRESET_STORAGE_KEY, JSON.stringify(p));
         persistZoomPreset(p.distance, controls);
-        console.info('[magnamat] View saved to localStorage (same as panel “Save”). Reload to apply if you changed code paths.');
+        console.info(
+          '[magnamat] View saved to localStorage (backup / dev). startScene() uses locked file defaults — use Copy main.mjs snippet and paste into main.mjs to ship this angle.'
+        );
         return p;
       },
       saveDefaultZoom() {
@@ -995,6 +976,8 @@ function startScene(container, canvas, options = {}) {
     tabSuspended = document.visibilityState === 'hidden';
   });
 
+  let lastW = W;
+  let lastH = H;
   let tick = 0;
   function animate() {
     requestAnimationFrame(animate);
@@ -1027,7 +1010,28 @@ function startScene(container, canvas, options = {}) {
     hero3dRoot.rotation.x = THREE.MathUtils.degToRad(2.5) * t + THREE.MathUtils.degToRad(9) * t2;
     hero3dRoot.rotation.y = THREE.MathUtils.degToRad(12) * t + THREE.MathUtils.degToRad(4) * t2;
     hero3dRoot.rotation.z = THREE.MathUtils.degToRad(-6.5) * t2;
-    hero3dRoot.position.y = 0.52 * t + 0.18 * t2;
+    /*
+     * Lower the WebGL stack vs. the plate photo (hero3dRoot Y only — CSS photo unchanged).
+     * Desktop overlap: also see .hero-product-stage > canvas translateY in styles.css (px nudge).
+     * Detect “narrow hero” by layout width / innerWidth — not only matchMedia, so Chrome device
+     * mode and odd viewports still pick this up.
+     */
+    const cw = container.clientWidth || lastW;
+    const iw = typeof window !== 'undefined' ? window.innerWidth : 9999;
+    /* Single-column hero only (< lg); avoids treating each ~472px column as “mobile” at 1024px+ */
+    const stackedHero =
+      typeof window !== 'undefined' && window.innerWidth < 1024;
+    const narrowHero =
+      stackedHero &&
+      (cw <= 560 ||
+        iw <= 640 ||
+        (typeof window !== 'undefined' &&
+          window.matchMedia &&
+          window.matchMedia('(max-width: 639px)').matches));
+    const desktopHero = !isSecondary && iw >= 1024;
+    /* Mobile: mat over lower bed (with cover + bg %). Desktop: extra shift in CSS (translateY) */
+    const heroMatWorldYOffset = narrowHero ? -0.48 : desktopHero ? -0.82 : 0;
+    hero3dRoot.position.y = 0.52 * t + 0.18 * t2 + heroMatWorldYOffset;
     hero3dRoot.position.z = -0.42 * t;
 
     /* Subtle opacity drift — large swings read as “dancing” over the mat */
@@ -1043,8 +1047,6 @@ function startScene(container, canvas, options = {}) {
   }
   animate();
 
-  let lastW = W;
-  let lastH = H;
   let resizeRaf = 0;
   function applyResize() {
     const { w, h } = readCanvasSize(container);

@@ -1,0 +1,8 @@
+{
+  "redirects": [{ "source": "/index.html", "destination": "/", "permanent": true }],
+  "rewrites": [
+    { "source": "/features", "destination": "/index.html" },
+    { "source": "/specs", "destination": "/index.html" },
+    { "source": "/compat", "destination": "/index.html" }
+  ]
+}

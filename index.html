@@ -33,20 +33,37 @@
 <nav class="site-nav" aria-label="Primary">
   <div class="site-nav__inner">
 
-    <a href="./" class="logo logo-mark" aria-label="mag·na·mat — home">
+    <a href="/" class="logo logo-mark" aria-label="mag·na·mat — home">
       <img src="images/logo-transparent.svg" alt="" width="1024" height="350" decoding="async" fetchpriority="high">
     </a>
 
     <div class="hidden md:flex items-center" style="gap:28px;flex-wrap:wrap;">
-      <a href="#features" class="nav-link">Features</a>
-      <a href="#specs" class="nav-link">Specs</a>
-      <a href="#compat" class="nav-link">Compatible</a>
+      <a href="/features" class="nav-link">Features</a>
+      <a href="/specs" class="nav-link">Specs</a>
+      <a href="/compat" class="nav-link">Compatible</a>
       <button type="button" class="nav-link js-yt-lightbox-open" data-youtube-id="M7lc1UVf-VE" aria-haspopup="dialog" aria-controls="yt-lightbox">
         As seen on YouTube
       </button>
     </div>
 
-    <button type="button" class="btn btn-primary" style="font-size:13px;padding:11px 26px;" aria-label="Pre-order (coming soon)">Pre-Order</button>
+    <div class="site-nav__actions">
+      <button
+        type="button"
+        class="site-nav__cart-btn js-cart-toggle"
+        aria-label="Open cart"
+        aria-expanded="false"
+        aria-controls="cart-drawer"
+      >
+        <svg class="site-nav__cart-icon" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true">
+          <path d="M6 6h15l-1.5 9h-12z" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M6 6 5 3H2" stroke-linecap="round" stroke-linejoin="round"/>
+          <circle cx="9" cy="20" r="1.2" fill="currentColor" stroke="none"/>
+          <circle cx="17" cy="20" r="1.2" fill="currentColor" stroke="none"/>
+        </svg>
+        <span class="site-nav__cart-badge js-cart-badge" hidden data-count="0">0</span>
+      </button>
+      <button type="button" class="btn btn-primary js-add-to-cart" data-product-id="magnamat-v1" style="font-size:13px;padding:11px 26px;" aria-label="Add to cart and pre-order">Pre-Order</button>
+    </div>
   </div>
 </nav>
 
@@ -55,13 +72,13 @@
 <!-- ═══════════════════════════
      HERO
 ═══════════════════════════ -->
-<section class="bg-grid hero-above-fold" style="min-height:100vh;padding-top:66px;padding-bottom:0;display:flex;flex-direction:column;align-items:stretch;position:relative;">
+<section class="bg-grid hero-above-fold">
 
-  <div class="hero-above-fold__main w-full max-w-[1300px] mx-auto px-4 pt-6 pb-8 sm:px-6 sm:pt-8 sm:pb-10 lg:px-6 lg:py-12" style="flex:1 1 auto;">
+  <div class="hero-above-fold__main w-full max-w-[1300px] mx-auto px-4 pt-6 pb-8 sm:px-6 sm:pt-8 sm:pb-10 lg:px-6 lg:py-12">
     <div class="hero-above-fold__reveal">
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-8 lg:items-center">
 
-      <div class="order-1 min-w-0">
+      <div class="order-1 min-w-0 hero-stack-copy">
 
         <div style="display:inline-flex;align-items:center;gap:10px;margin-bottom:18px;padding:8px 16px;border:1px solid rgba(22,22,22,0.1);background:rgba(255,255,255,0.55);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-radius:4px;box-shadow:0 2px 20px rgba(59,155,229,0.08);">
           <span class="pulse-dot" style="width:7px;height:7px;border-radius:50%;background:var(--red);display:inline-block;flex-shrink:0;"></span>
@@ -79,8 +96,8 @@
         </p>
 
         <div style="display:flex;gap:14px;flex-wrap:wrap;margin-bottom:28px;">
-          <button type="button" class="btn btn-primary" style="font-size:15px;padding:15px 36px;" aria-label="Pre-order now (coming soon)">Pre-Order Now</button>
-          <a href="#specs" class="btn btn-outline" style="font-size:15px;padding:15px 36px;text-decoration:none;">View Specs</a>
+          <button type="button" class="btn btn-primary js-add-to-cart" data-product-id="magnamat-v1" style="font-size:15px;padding:15px 36px;" aria-label="Add mag·na·mat v1.0 to cart">Pre-Order Now</button>
+          <a href="/specs" class="btn btn-outline" style="font-size:15px;padding:15px 36px;text-decoration:none;">View Specs</a>
         </div>
 
         <div class="flex" style="border:1px solid var(--border);overflow:hidden;border-radius:4px;background:var(--card);">
@@ -100,8 +117,8 @@
       </div>
 
       <div class="order-2 min-w-0 lg:order-2 hero-product-col">
-        <div class="hero-product-photo" aria-hidden="true"></div>
         <div id="canvas-container" class="hero-canvas-h hero-product-stage" style="position:relative;">
+          <div class="hero-product-photo" aria-hidden="true"></div>
           <canvas id="mat-canvas" role="img" tabindex="0" aria-label="Interactive 3D preview of the mag·na·mat build surface. Drag to rotate the view. Add ?adjust=1 to the page URL to enable scroll zoom while tuning the camera."></canvas>
           <div class="font-display font-medium" style="position:absolute;top:14px;left:14px;font-size:9px;color:var(--ink-faint);letter-spacing:0.12em;text-transform:uppercase;pointer-events:none;">mag·na·mat v1.0</div>
           <div style="position:absolute;bottom:14px;right:14px;display:flex;align-items:center;gap:6px;opacity:0.55;pointer-events:none;color:var(--ink-soft);">
@@ -351,7 +368,7 @@
     </div>
 
     <div class="reveal" style="transition-delay:0.3s;">
-      <button type="button" class="btn btn-primary" style="font-size:17px;padding:18px 52px;" aria-label="Get your mag·na·mat (coming soon)">Get Your mag·na·mat</button>
+      <button type="button" class="btn btn-primary js-add-to-cart" data-product-id="magnamat-v1" style="font-size:17px;padding:18px 52px;" aria-label="Add mag·na·mat v1.0 to cart">Get Your mag·na·mat</button>
     </div>
   </div>
 </section>
@@ -359,6 +376,27 @@
 </main>
 
 <!-- YouTube lightbox (opened from nav “As seen on YouTube”) — set data-youtube-id on .js-yt-lightbox-open -->
+<dialog id="cart-drawer" class="cart-drawer" aria-labelledby="cart-drawer-title">
+  <div class="cart-drawer__panel">
+    <header class="cart-drawer__head">
+      <h2 id="cart-drawer-title" class="cart-drawer__title font-display">Cart</h2>
+      <button type="button" class="cart-drawer__close js-cart-close" aria-label="Close cart">×</button>
+    </header>
+    <div class="cart-drawer__body">
+      <p class="cart-drawer__empty js-cart-empty">Your cart is empty. Use Pre-Order to add the mat.</p>
+      <ul class="cart-drawer__lines js-cart-lines" aria-label="Cart items"></ul>
+    </div>
+    <footer class="cart-drawer__footer js-cart-footer" hidden>
+      <div class="cart-drawer__subrow">
+        <span class="cart-drawer__sub-label">Subtotal</span>
+        <strong class="cart-drawer__sub-value js-cart-subtotal">—</strong>
+      </div>
+      <p class="cart-drawer__hint js-cart-subtotal-hint"></p>
+      <button type="button" class="btn btn-primary js-cart-checkout" style="width:100%;font-size:14px;padding:14px 20px;">Checkout link not set</button>
+    </footer>
+  </div>
+</dialog>
+
 <div id="yt-lightbox" class="yt-lightbox" role="dialog" aria-modal="true" aria-label="YouTube video" hidden>
   <div class="yt-lightbox__backdrop js-yt-lightbox-close" tabindex="-1"></div>
   <div class="yt-lightbox__dialog">
@@ -406,6 +444,7 @@
 <script type="module" src="js/main.mjs"></script>
 <script type="module" src="js/nav-spy.mjs"></script>
 <script type="module" src="js/yt-lightbox.mjs"></script>
+<script type="module" src="js/cart.mjs"></script>
 
 </body>
 </html>

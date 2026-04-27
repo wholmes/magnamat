@@ -2,7 +2,8 @@
   "name": "magnamat",
   "private": true,
   "scripts": {
-    "build:css": "tailwindcss -i ./css/tailwind-input.css -o ./css/tailwind.css --minify"
+    "build:css": "tailwindcss -i ./css/tailwind-input.css -o ./css/tailwind.css --minify",
+    "serve": "npx --yes serve . -s -l 8766"
   },
   "devDependencies": {
     "tailwindcss": "^3.4.17"

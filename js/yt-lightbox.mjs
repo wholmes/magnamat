@@ -27,7 +27,9 @@ function closeLightbox() {
   if (!root) return;
   root.hidden = true;
   if (iframe) iframe.src = '';
-  document.body.style.overflow = '';
+  const cart = document.getElementById('cart-drawer');
+  const cartOpen = cart instanceof HTMLDialogElement && cart.open;
+  document.body.style.overflow = cartOpen ? 'hidden' : '';
   lastOpener?.focus({ preventScroll: true });
   lastOpener = null;
 }

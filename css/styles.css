@@ -271,16 +271,16 @@ body::after {
 
 /* Hero 3D: shorter on small viewports so headline + CTAs stay in first screen */
 .hero-canvas-h {
-  height: clamp(188px, min(38vw, 30vh), 300px);
+  height: clamp(280px, min(62vw, 48vh), 440px);
 }
 @media (min-width: 640px) {
   .hero-canvas-h {
-    height: clamp(260px, 44vw, 480px);
+    height: clamp(288px, 48vw, 520px);
   }
 }
 @media (min-width: 1024px) {
   .hero-canvas-h {
-    height: clamp(300px, 48vw, 560px);
+    height: clamp(320px, 50vw, 600px);
   }
 }
 
@@ -290,23 +290,77 @@ body::after {
   /* Let the photo bleed past the canvas box; avoid clipping the art */
   overflow: visible;
 }
+/* Plate fills the stage (same box as canvas). Side bleed was clipped by body overflow-x: hidden. */
 .hero-product-photo {
   position: absolute;
+  inset: 0;
   z-index: 0;
-  top: -5%;
-  left: -12%;
-  right: -12%;
-  bottom: -14%;
   pointer-events: none;
-  /* Photo only — no full-bleed wash (that read as a faint box behind the WebGL column) */
   background-image: url('../images/hero-product-pinfield.png');
-  background-size: clamp(200px, 38vw, 380px) auto;
-  background-position: 14% calc(58% - 150px);
   background-repeat: no-repeat;
+}
+@media (max-width: 639px) {
+  .hero-stack-copy {
+    position: relative;
+    z-index: 2;
+  }
+  .hero-product-col {
+    margin-top: clamp(18px, 5vw, 36px);
+    padding-inline: clamp(6px, 2.5vw, 14px);
+    z-index: 0;
+  }
+  .hero-product-col .hero-product-stage {
+    width: 100%;
+    max-width: 100%;
+    margin-inline: 0;
+    overflow: hidden;
+    /* One compositing box: plate fills height; WebGL stacks above */
+    height: clamp(480px, min(82vw, 58vh), 660px);
+  }
+  /*
+   * Mobile plate: fill the stage (no dead band), anchor the machine low so the mat can sit
+   * over its lower half. Tweak background-position % / heroMatWorldYOffset in main.mjs together.
+   */
+  .hero-product-col .hero-product-photo {
+    background-size: cover;
+    background-position: center 58%;
+  }
+}
+/* Tablet / small desktop: show full left edge of machine inside the stage */
+@media (min-width: 640px) and (max-width: 1023px) {
+  .hero-product-col .hero-product-photo {
+    background-size: min(122%, 92vw) auto;
+    background-position: 6% 50%;
+  }
+}
+/* Desktop lg: Eufy plate only - alpha ramp + blurred mask edge (cleaner than gray luminance) */
+@media (min-width: 1024px) {
+  .hero-product-col .hero-product-photo {
+    background-size: min(118%, 820px) auto;
+    background-position: 0% 50%;
+    -webkit-mask: url("data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Cdefs%3E%3ClinearGradient%20id%3D%22g%22%20gradientUnits%3D%22objectBoundingBox%22%20x1%3D%220%22%20y1%3D%220%22%20x2%3D%221%22%20y2%3D%220%22%3E%3Cstop%20offset%3D%220%25%22%20stop-color%3D%22white%22%20stop-opacity%3D%221%22%2F%3E%3Cstop%20offset%3D%2272%25%22%20stop-color%3D%22white%22%20stop-opacity%3D%221%22%2F%3E%3Cstop%20offset%3D%2282%25%22%20stop-color%3D%22white%22%20stop-opacity%3D%220.55%22%2F%3E%3Cstop%20offset%3D%2292%25%22%20stop-color%3D%22white%22%20stop-opacity%3D%220.14%22%2F%3E%3Cstop%20offset%3D%22100%25%22%20stop-color%3D%22white%22%20stop-opacity%3D%220%22%2F%3E%3C%2FlinearGradient%3E%3Cfilter%20id%3D%22f%22%20x%3D%22-0.08%22%20y%3D%22-0.08%22%20width%3D%221.16%22%20height%3D%221.16%22%20filterUnits%3D%22objectBoundingBox%22%3E%3CfeGaussianBlur%20in%3D%22SourceGraphic%22%20stdDeviation%3D%220.026%22%2F%3E%3C%2Ffilter%3E%3C%2Fdefs%3E%3Cmask%20id%3D%22m%22%20maskUnits%3D%22objectBoundingBox%22%20maskContentUnits%3D%22objectBoundingBox%22%3E%3Crect%20width%3D%221%22%20height%3D%221%22%20fill%3D%22url(%23g)%22%20filter%3D%22url(%23f)%22%2F%3E%3C%2Fmask%3E%3C%2Fsvg%3E#m")
+      no-repeat center / 100% 100%;
+    mask: url("data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Cdefs%3E%3ClinearGradient%20id%3D%22g%22%20gradientUnits%3D%22objectBoundingBox%22%20x1%3D%220%22%20y1%3D%220%22%20x2%3D%221%22%20y2%3D%220%22%3E%3Cstop%20offset%3D%220%25%22%20stop-color%3D%22white%22%20stop-opacity%3D%221%22%2F%3E%3Cstop%20offset%3D%2272%25%22%20stop-color%3D%22white%22%20stop-opacity%3D%221%22%2F%3E%3Cstop%20offset%3D%2282%25%22%20stop-color%3D%22white%22%20stop-opacity%3D%220.55%22%2F%3E%3Cstop%20offset%3D%2292%25%22%20stop-color%3D%22white%22%20stop-opacity%3D%220.14%22%2F%3E%3Cstop%20offset%3D%22100%25%22%20stop-color%3D%22white%22%20stop-opacity%3D%220%22%2F%3E%3C%2FlinearGradient%3E%3Cfilter%20id%3D%22f%22%20x%3D%22-0.08%22%20y%3D%22-0.08%22%20width%3D%221.16%22%20height%3D%221.16%22%20filterUnits%3D%22objectBoundingBox%22%3E%3CfeGaussianBlur%20in%3D%22SourceGraphic%22%20stdDeviation%3D%220.026%22%2F%3E%3C%2Ffilter%3E%3C%2Fdefs%3E%3Cmask%20id%3D%22m%22%20maskUnits%3D%22objectBoundingBox%22%20maskContentUnits%3D%22objectBoundingBox%22%3E%3Crect%20width%3D%221%22%20height%3D%221%22%20fill%3D%22url(%23g)%22%20filter%3D%22url(%23f)%22%2F%3E%3C%2Fmask%3E%3C%2Fsvg%3E#m")
+      no-repeat center / 100% 100%;
+    -webkit-mask-type: alpha;
+    mask-type: alpha;
+  }
 }
 .hero-product-col .hero-product-stage {
   position: relative;
   z-index: 1;
+}
+.hero-product-stage > canvas {
+  position: relative;
+  z-index: 1;
+  display: block;
+}
+
+/* Desktop: lower the WebGL mat on the Eufy plate — world-space Y at ~18m camera reads tiny on screen */
+@media (min-width: 1024px) {
+  .hero-product-col .hero-product-stage > canvas {
+    transform: translateY(clamp(64px, 8vh, 140px));
+  }
 }
 
 .webgl-fallback {
@@ -413,6 +467,16 @@ body::after {
 
 /* Hero: color + depth up top, resolves to clean white toward the bottom */
 .hero-above-fold {
+  /* Grid keeps the ticker on the last row of a full-viewport shell; tall hero scrolls inside main */
+  display: grid;
+  grid-template-columns: 100%;
+  grid-template-rows: minmax(0, 1fr) auto;
+  position: relative;
+  padding-top: 66px;
+  padding-bottom: 0;
+  box-sizing: border-box;
+  min-height: 100vh;
+  min-height: 100dvh;
   background-color: #ffffff;
   background-image:
     var(--corner-vignette),
@@ -472,6 +536,10 @@ body::after {
 .hero-above-fold__main {
   position: relative;
   z-index: 1;
+  min-height: 0;
+  overflow-x: hidden;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 /* Mask runs on inner block so flex + min-height quirks don’t skip the first paint */
@@ -482,15 +550,15 @@ body::after {
   animation: hero-mask-reveal 0.72s cubic-bezier(0.22, 1, 0.36, 1) 0.14s both;
 }
 
-/* Full-bleed ticker at bottom of hero (first screen) */
+/* Full-bleed ticker: bottom grid row = always visible at foot of first viewport */
 .hero-marquee {
-  flex: 0 0 auto;
   position: relative;
   z-index: 2;
   width: 100%;
   border-top: 1px solid rgba(255, 255, 255, 0.12);
   border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-  padding: 14px 0 calc(14px + env(safe-area-inset-bottom, 0px));
+  padding: 14px max(14px, env(safe-area-inset-left, 0px)) calc(14px + env(safe-area-inset-bottom, 0px))
+    max(14px, env(safe-area-inset-right, 0px));
   overflow: hidden;
   background: #0a0a0a;
 }
@@ -641,6 +709,246 @@ body::after {
   box-shadow: 0 8px 28px rgba(0, 0, 0, 0.35);
 }
 
+.site-nav__actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+.site-nav__cart-btn {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border: 1px solid var(--border-strong);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.5);
+  color: var(--ink);
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
+}
+.site-nav__cart-btn:hover {
+  background: var(--card);
+  border-color: rgba(22, 22, 22, 0.14);
+  color: var(--red);
+}
+.site-nav__cart-icon {
+  display: block;
+}
+.site-nav__cart-badge {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  min-width: 16px;
+  height: 16px;
+  padding: 0 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Space Mono', monospace;
+  font-size: 9px;
+  font-weight: 700;
+  color: #fff;
+  background: var(--red);
+  border-radius: 999px;
+  line-height: 1;
+}
+
+/* Cart drawer (<dialog>) */
+.cart-drawer {
+  position: fixed;
+  inset: 0 0 0 auto;
+  width: min(420px, 100vw);
+  height: 100dvh;
+  max-height: 100%;
+  margin: 0;
+  padding: 0;
+  border: none;
+  background: transparent;
+}
+.cart-drawer::backdrop {
+  background: rgba(22, 22, 22, 0.38);
+  backdrop-filter: blur(8px) saturate(1.05);
+  -webkit-backdrop-filter: blur(8px) saturate(1.05);
+}
+.cart-drawer__panel {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+  background: var(--card);
+  border-left: 1px solid var(--border-strong);
+  box-shadow: -16px 0 56px rgba(22, 22, 22, 0.12);
+}
+.cart-drawer__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18px 20px 14px;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+.cart-drawer__title {
+  font-size: 1.35rem;
+  letter-spacing: -0.02em;
+  color: var(--ink);
+}
+.cart-drawer__close {
+  width: 40px;
+  height: 40px;
+  border: none;
+  border-radius: 8px;
+  background: rgba(22, 22, 22, 0.06);
+  color: var(--ink);
+  font-size: 22px;
+  line-height: 1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s, color 0.15s;
+}
+.cart-drawer__close:hover {
+  background: rgba(22, 22, 22, 0.1);
+  color: var(--red);
+}
+.cart-drawer__body {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 16px 20px;
+  -webkit-overflow-scrolling: touch;
+}
+.cart-drawer__empty {
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--ink-muted);
+}
+.cart-drawer__lines {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.cart-drawer__line {
+  padding: 16px 0;
+  border-bottom: 1px solid var(--border);
+}
+.cart-drawer__line:last-child {
+  border-bottom: none;
+}
+.cart-drawer__line-main {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: flex-start;
+}
+.cart-drawer__line-name {
+  font-family: 'Barlow', sans-serif;
+  font-weight: 600;
+  font-size: 16px;
+  color: var(--ink);
+}
+.cart-drawer__line-sub {
+  margin-top: 4px;
+  font-size: 12px;
+  line-height: 1.45;
+  color: var(--ink-soft);
+}
+.cart-drawer__line-meta {
+  flex-shrink: 0;
+  text-align: right;
+}
+.cart-drawer__line-price {
+  display: block;
+  font-family: 'Space Mono', monospace;
+  font-size: 12px;
+  color: var(--ink-muted);
+  margin-bottom: 8px;
+}
+.cart-drawer__qty {
+  display: inline-flex;
+  align-items: center;
+  gap: 0;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  overflow: hidden;
+}
+.cart-drawer__qty-btn {
+  width: 32px;
+  height: 32px;
+  border: none;
+  background: var(--page);
+  color: var(--ink);
+  font-size: 18px;
+  line-height: 1;
+  cursor: pointer;
+  transition: background 0.12s;
+}
+.cart-drawer__qty-btn:hover {
+  background: var(--page-2);
+}
+.cart-drawer__qty-val {
+  min-width: 28px;
+  text-align: center;
+  font-family: 'Space Mono', monospace;
+  font-size: 12px;
+  font-weight: 700;
+}
+.cart-drawer__remove {
+  margin-top: 10px;
+  padding: 0;
+  border: none;
+  background: none;
+  font-family: 'Space Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.cart-drawer__remove:hover {
+  color: var(--red);
+}
+.cart-drawer__footer {
+  flex-shrink: 0;
+  padding: 18px 20px calc(18px + env(safe-area-inset-bottom, 0px));
+  border-top: 1px solid var(--border);
+  background: var(--card);
+}
+.cart-drawer__subrow {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 6px;
+}
+.cart-drawer__sub-label {
+  font-family: 'Space Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+}
+.cart-drawer__sub-value {
+  font-size: 1.15rem;
+  color: var(--ink);
+}
+.cart-drawer__hint {
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--ink-muted);
+  margin: 0 0 14px;
+}
+.cart-drawer .btn-primary:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  transform: none;
+}
+
 .hero-above-fold .btn-primary {
   background: #0a0a0a;
   color: #fff;
@@ -653,6 +961,11 @@ body::after {
 
 @media (prefers-reduced-motion: reduce) {
   .site-nav { transition: none; }
+  .site-nav__cart-btn,
+  .cart-drawer__close,
+  .cart-drawer__qty-btn {
+    transition: none;
+  }
 }
 
 .nav-link {
