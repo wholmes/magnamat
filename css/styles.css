@@ -1,9 +1,10 @@
 :root {
   --red: #E5342A;
   --blue: #3B9BE5;
-  --page: #fafaf8;
-  --page-2: #f3f1ed;
-  --page-3: #e8e6e1;
+  /* Cool neutrals (no cream / yellow cast) */
+  --page: #f2f4f7;
+  --page-2: #e6eaef;
+  --page-3: #d8dee6;
   --card: #ffffff;
   --ink: #161616;
   --ink-muted: rgba(22, 22, 22, 0.58);
@@ -13,15 +14,93 @@
   --border-strong: rgba(22, 22, 22, 0.12);
   /* Sections that referenced --dark as “floor” */
   --dark: var(--page);
+  /* Fixed nav frosted tint (optional palettes override via html[data-nav-bg]) */
+  --nav-chrome: var(--page);
+  /* Top-right black vignette — nav + hero share; fixed = viewport-aligned */
+  --corner-vignette: radial-gradient(ellipse 110% 80% at 92% 6%, rgba(0, 0, 0, 0.42) 0%, transparent 52%);
+}
+
+/* Nav bar only — body, hero, and sections unchanged */
+html[data-nav-bg="warm"] {
+  --nav-chrome: #f2e8dc;
+}
+html[data-nav-bg="cool"] {
+  --nav-chrome: #e4ecf5;
+}
+html[data-nav-bg="mist"] {
+  --nav-chrome: #e8ebe8;
 }
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-html { scroll-behavior: smooth; }
+html {
+  scroll-behavior: smooth;
+  /* Fixed nav: in-page anchors (#features, etc.) land with room below the bar */
+  scroll-padding-top: 76px;
+}
 body {
   background: var(--page);
   color: var(--ink);
   font-family: 'Barlow', sans-serif;
   overflow-x: hidden;
+}
+
+/* Skip link — visible only when focused (keyboard / SR) */
+.skip-link {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 10000;
+  padding: 10px 16px;
+  margin: 6px;
+  font-family: 'Space Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  text-decoration: none;
+  color: #fff;
+  background: var(--red);
+  border-radius: 4px;
+  clip-path: polygon(6px 0%, 100% 0%, calc(100% - 6px) 100%, 0% 100%);
+  transform: translateY(-120%);
+  transition: transform 0.2s ease;
+}
+.skip-link:focus {
+  transform: translateY(0);
+  outline: none;
+}
+.skip-link:focus-visible {
+  box-shadow: 0 0 0 3px rgba(59, 155, 229, 0.55);
+}
+
+/* Focus rings: high contrast, no mouse-only :focus ring on click */
+.nav-link:focus-visible,
+.btn:focus-visible,
+a.btn-outline:focus-visible {
+  outline: 2px solid var(--blue);
+  outline-offset: 3px;
+}
+#mat-canvas:focus-visible {
+  outline: 2px solid var(--blue);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  .marquee-track { animation: none !important; }
+  .pulse-dot { animation: none; opacity: 1; }
+  .reveal { transition-duration: 0.12s; }
+  .f-card { transition-duration: 0.12s; }
+  .f-card:hover { transform: none; }
+  .btn { transition-duration: 0.12s; }
+  .btn-primary:hover,
+  .btn-outline:hover { transform: none; }
+  .skip-link { transition: none; }
+  .hero-above-fold__reveal {
+    animation: none !important;
+    clip-path: none !important;
+    -webkit-clip-path: none !important;
+    opacity: 1 !important;
+  }
 }
 
 /* Subtle paper grain */
@@ -46,13 +125,14 @@ body::after {
 }
 .logo-mark img {
   display: block;
-  height: clamp(36px, 5.2vw, 52px);
+  height: clamp(42px, 6vw, 60px);
   width: auto;
-  max-width: min(360px, 58vw);
+  max-width: min(420px, 64vw);
 }
+
 .logo-mark--footer img {
-  height: clamp(30px, 4vw, 42px);
-  max-width: min(300px, 72vw);
+  height: clamp(36px, 4.6vw, 50px);
+  max-width: min(340px, 76vw);
 }
 
 /* Buttons */
@@ -77,14 +157,15 @@ body::after {
   position: relative;
   width: 100%;
   background: transparent;
-  border-radius: 16px;
-  border: 1px solid rgba(22, 22, 22, 0.1);
-  box-shadow:
-    0 4px 32px rgba(22, 22, 22, 0.08),
-    0 0 0 1px rgba(255, 255, 255, 0.35) inset;
   overflow: hidden;
 }
-#mat-canvas { display: block; width: 100%; height: 100%; }
+#mat-canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+  background: transparent;
+  touch-action: none; /* let OrbitControls own pointer; avoid browser panning the page */
+}
 
 /* Hero headline: compact on small screens so block fits above the fold */
 .hero-title {
@@ -114,6 +195,31 @@ body::after {
   .hero-canvas-h {
     height: clamp(300px, 48vw, 560px);
   }
+}
+
+/* Hero reference photo behind WebGL (path kept for existing markup) */
+.hero-product-col {
+  position: relative;
+  /* Let the photo bleed past the canvas box; avoid clipping the art */
+  overflow: visible;
+}
+.hero-product-photo {
+  position: absolute;
+  z-index: 0;
+  top: -5%;
+  left: -12%;
+  right: -12%;
+  bottom: -14%;
+  pointer-events: none;
+  /* Photo only — no full-bleed wash (that read as a faint box behind the WebGL column) */
+  background-image: url('../images/hero-product-pinfield.png');
+  background-size: clamp(200px, 38vw, 380px) auto;
+  background-position: 14% calc(58% - 150px);
+  background-repeat: no-repeat;
+}
+.hero-product-col .hero-product-stage {
+  position: relative;
+  z-index: 1;
 }
 
 .webgl-fallback {
@@ -172,17 +278,88 @@ body::after {
   background-size: 52px 52px;
 }
 
-/* Hero: bolder color + depth (pairs with WebGL gradient inside canvas) */
+/* Hero: color + depth up top, resolves to clean white toward the bottom */
 .hero-above-fold {
-  background-color: #e6eaf0;
+  background-color: #ffffff;
   background-image:
-    radial-gradient(ellipse 110% 85% at 92% 8%, rgba(59, 155, 229, 0.45) 0%, transparent 58%),
-    radial-gradient(ellipse 95% 75% at 4% 92%, rgba(229, 52, 42, 0.32) 0%, transparent 55%),
-    radial-gradient(ellipse 70% 55% at 50% 40%, rgba(255, 255, 255, 0.55) 0%, transparent 62%),
-    linear-gradient(168deg, #dce4ee 0%, #f6f3ef 45%, #f0e8e4 100%),
-    linear-gradient(rgba(22, 22, 22, 0.045) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(22, 22, 22, 0.045) 1px, transparent 1px);
+    var(--corner-vignette),
+    radial-gradient(ellipse 80% 55% at 10% 72%, rgba(229, 52, 42, 0.22) 0%, transparent 48%),
+    radial-gradient(ellipse 70% 50% at 50% 32%, rgba(255, 255, 255, 0.5) 0%, transparent 55%),
+    linear-gradient(172deg, #e8e8ea 0%, #efeff2 24%, #f5f5f7 46%, #fafafc 68%, #ffffff 86%, #ffffff 100%),
+    linear-gradient(rgba(22, 22, 22, 0.038) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(22, 22, 22, 0.038) 1px, transparent 1px);
   background-size: auto, auto, auto, auto, 48px 48px, 48px 48px;
+  background-attachment: fixed, scroll, scroll, scroll, scroll, scroll;
+}
+
+/*
+ * Hero overlay — not paint swaths: one soft “prism shear” (brand colors) + micro hatch
+ * (toolpath / scan-field vibe). Tweak angles or alphas here; remove this block for zero overlay.
+ */
+.hero-above-fold::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background-image:
+    linear-gradient(
+      102deg,
+      transparent 0%,
+      transparent 36%,
+      rgba(22, 22, 22, 0.045) 49%,
+      rgba(229, 52, 42, 0.065) 58%,
+      transparent 72%
+    ),
+    repeating-linear-gradient(
+      124deg,
+      transparent,
+      transparent 11px,
+      rgba(22, 22, 22, 0.02) 11px,
+      rgba(22, 22, 22, 0.02) 12px
+    );
+  mix-blend-mode: multiply;
+  opacity: 0.72;
+  /* Keep texture in the upper “atmosphere”; let the floor read as plain white */
+  -webkit-mask-image: linear-gradient(to bottom, #000 0%, #000 52%, rgba(0, 0, 0, 0.45) 72%, transparent 100%);
+  mask-image: linear-gradient(to bottom, #000 0%, #000 52%, rgba(0, 0, 0, 0.45) 72%, transparent 100%);
+}
+
+@keyframes hero-mask-reveal {
+  from {
+    -webkit-clip-path: polygon(0 0, 0 0, 0 100%, 0 100%);
+    clip-path: polygon(0 0, 0 0, 0 100%, 0 100%);
+  }
+  to {
+    -webkit-clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%);
+    clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%);
+  }
+}
+
+.hero-above-fold__main {
+  position: relative;
+  z-index: 1;
+}
+
+/* Mask runs on inner block so flex + min-height quirks don’t skip the first paint */
+.hero-above-fold__reveal {
+  transform: translateZ(0);
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+  animation: hero-mask-reveal 0.72s cubic-bezier(0.22, 1, 0.36, 1) 0.14s both;
+}
+
+/* Full-bleed ticker at bottom of hero (first screen) */
+.hero-marquee {
+  flex: 0 0 auto;
+  position: relative;
+  z-index: 2;
+  width: 100%;
+  border-top: 1px solid rgba(255, 255, 255, 0.12);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  padding: 14px 0 calc(14px + env(safe-area-inset-bottom, 0px));
+  overflow: hidden;
+  background: #0a0a0a;
 }
 
 /* Pin texture — still reads as “mat surface” on light UI */
@@ -244,7 +421,70 @@ body::after {
   color: var(--ink);
 }
 
-/* Nav */
+/* Nav — bar reads as a shelf, not a transparent strip */
+.site-nav {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 100;
+  background-color: color-mix(in srgb, var(--nav-chrome) 86%, transparent);
+  background-image: var(--corner-vignette);
+  background-attachment: fixed;
+  background-repeat: no-repeat;
+  backdrop-filter: blur(18px) saturate(1.12);
+  -webkit-backdrop-filter: blur(18px) saturate(1.12);
+  border-bottom: 1px solid var(--border-strong);
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.9) inset,
+    0 10px 28px -12px rgba(22, 22, 22, 0.07);
+  transition: background-color 0.22s ease, box-shadow 0.22s ease, border-color 0.22s ease;
+}
+.site-nav.site-nav--scrolled {
+  background-color: color-mix(in srgb, var(--nav-chrome) 97%, transparent);
+  background-image: var(--corner-vignette);
+  background-attachment: fixed;
+  background-repeat: no-repeat;
+  border-bottom-color: rgba(22, 22, 22, 0.16);
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.85) inset,
+    0 14px 36px -10px rgba(22, 22, 22, 0.1);
+}
+.site-nav__inner {
+  max-width: 1300px;
+  margin: 0 auto;
+  padding: 0 24px;
+  height: 66px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.site-nav .btn-primary {
+  background: #0a0a0a;
+  color: #fff;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+}
+.site-nav .btn-primary:hover {
+  background: #1a1a1a;
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.35);
+}
+
+.hero-above-fold .btn-primary {
+  background: #0a0a0a;
+  color: #fff;
+  border: 1px solid rgba(22, 22, 22, 0.18);
+}
+.hero-above-fold .btn-primary:hover {
+  background: #1a1a1a;
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.3);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .site-nav { transition: none; }
+}
+
 .nav-link {
   font-size: 11px;
   letter-spacing: 0.18em;
@@ -254,7 +494,9 @@ body::after {
   font-family: 'Space Mono', monospace;
   transition: color 0.2s;
 }
-.nav-link:hover { color: var(--ink); }
+.nav-link:hover {
+  color: var(--ink);
+}
 
 .nav-link.nav-link--active {
   color: var(--ink);
@@ -266,4 +508,94 @@ body::after {
 .nav-link.nav-link--active:hover {
   color: var(--ink);
   text-decoration-color: var(--red);
+}
+
+/* Nav: YouTube opener matches <a.nav-link> — avoid font: inherit (inherits parent size, not .nav-link) */
+button.nav-link {
+  border: none;
+  background: none;
+  cursor: pointer;
+  padding: 0;
+  margin: 0;
+  text-align: inherit;
+  line-height: inherit;
+  appearance: none;
+  -webkit-appearance: none;
+}
+
+/* YouTube lightbox + responsive embed */
+.yt-lightbox[hidden] {
+  display: none !important;
+}
+.yt-lightbox:not([hidden]) {
+  position: fixed;
+  inset: 0;
+  z-index: 20000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: max(16px, env(safe-area-inset-top)) max(16px, env(safe-area-inset-right)) max(16px, env(safe-area-inset-bottom))
+    max(16px, env(safe-area-inset-left));
+}
+.yt-lightbox__backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(250, 251, 252, 0.88);
+  backdrop-filter: blur(14px) saturate(1.1);
+  -webkit-backdrop-filter: blur(14px) saturate(1.1);
+  cursor: pointer;
+}
+.yt-lightbox__dialog {
+  position: relative;
+  z-index: 1;
+  width: min(960px, 100%);
+  max-height: min(90vh, 100%);
+  background: var(--card);
+  border-radius: 12px;
+  border: 1px solid var(--border-strong);
+  box-shadow: 0 28px 90px rgba(22, 22, 22, 0.14);
+  padding: 12px;
+}
+.yt-lightbox__close {
+  position: absolute;
+  top: 6px;
+  right: 8px;
+  z-index: 2;
+  width: 40px;
+  height: 40px;
+  border: none;
+  border-radius: 8px;
+  background: rgba(22, 22, 22, 0.06);
+  color: var(--ink);
+  font-size: 22px;
+  line-height: 1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s, color 0.15s;
+}
+.yt-lightbox__close:hover {
+  background: rgba(22, 22, 22, 0.1);
+  color: var(--red);
+}
+.yt-embed {
+  position: relative;
+  width: 100%;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid var(--border-strong);
+  box-shadow: 0 12px 40px rgba(22, 22, 22, 0.08);
+  background: #0a0a0a;
+  aspect-ratio: 16 / 9;
+}
+.yt-embed--lightbox {
+  box-shadow: none;
+}
+.yt-embed iframe {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border: 0;
 }

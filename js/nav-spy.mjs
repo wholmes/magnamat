@@ -1,10 +1,17 @@
 const SECTION_IDS = ['features', 'specs', 'compat'];
-const LINK_SELECTOR = 'nav .nav-link';
+/* Only <a href="#…"> — exclude e.g. YouTube lightbox <button class="nav-link"> */
+const LINK_SELECTOR = 'nav a.nav-link[href^="#"]';
 
 function activationY() {
   const nav = document.querySelector('nav');
   const navH = nav?.getBoundingClientRect().height ?? 66;
   return Math.min(navH + 40, window.innerHeight * 0.2);
+}
+
+function updateNavScrolled() {
+  const nav = document.querySelector('nav.site-nav');
+  if (!nav) return;
+  nav.classList.toggle('site-nav--scrolled', window.scrollY > 20);
 }
 
 function updateNavSpy() {
@@ -31,6 +38,7 @@ function schedule() {
   ticking = true;
   requestAnimationFrame(() => {
     ticking = false;
+    updateNavScrolled();
     updateNavSpy();
   });
 }
@@ -38,5 +46,9 @@ function schedule() {
 window.addEventListener('scroll', schedule, { passive: true });
 window.addEventListener('resize', schedule, { passive: true });
 window.addEventListener('hashchange', updateNavSpy);
-window.addEventListener('load', updateNavSpy);
+window.addEventListener('load', () => {
+  updateNavScrolled();
+  updateNavSpy();
+});
+updateNavScrolled();
 updateNavSpy();

@@ -1,12 +1,23 @@
 <!DOCTYPE html>
+<!-- Nav bar tint only: <html data-nav-bg="warm"> | "cool" | "mist". Omit for nav matching page (--page). -->
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="color-scheme" content="light only">
+  <meta name="theme-color" content="#f2f4f7">
+  <meta name="description" content="mag·na·mat — precision magnetic print surface for the Eufy Maker system. 2,700+ micro-pin contacts, flex spring steel, 255°C rated, effortless release.">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="mag·na·mat — Magnetic Maker Mat for Eufy">
+  <meta property="og:description" content="Precision-engineered magnetic print surface for the Eufy Maker system. Grip during print, pop-off release when you are done.">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="mag·na·mat — Magnetic Maker Mat for Eufy">
+  <meta name="twitter:description" content="Precision magnetic print surface for the Eufy Maker system — 2,700+ pin contacts, flex steel, 255°C rated.">
   <title>mag·na·mat — Magnetic Maker Mat for Eufy</title>
 
   <link rel="icon" href="favicon.svg" type="image/svg+xml">
   <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@700;900&family=Barlow:wght@300;400;500&family=Orbitron:wght@400;500;600;700;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
 
   <link rel="stylesheet" href="css/tailwind.css">
@@ -14,39 +25,47 @@
 </head>
 <body>
 
+<a class="skip-link" href="#main">Skip to main content</a>
+
 <!-- ═══════════════════════════
      NAVIGATION
 ═══════════════════════════ -->
-<nav style="position:fixed;top:0;left:0;right:0;z-index:100;background:rgba(250,250,248,0.92);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-bottom:1px solid var(--border);">
-  <div style="max-width:1300px;margin:0 auto;padding:0 24px;height:66px;display:flex;align-items:center;justify-content:space-between;">
+<nav class="site-nav" aria-label="Primary">
+  <div class="site-nav__inner">
 
-    <div class="logo logo-mark">
-      <img src="images/logo.png" alt="mag·na·mat" width="1024" height="350" decoding="async">
-    </div>
+    <a href="./" class="logo logo-mark" aria-label="mag·na·mat — home">
+      <img src="images/logo-transparent.svg" alt="" width="1024" height="350" decoding="async" fetchpriority="high">
+    </a>
 
-    <div class="hidden md:flex items-center" style="gap:36px;">
+    <div class="hidden md:flex items-center" style="gap:28px;flex-wrap:wrap;">
       <a href="#features" class="nav-link">Features</a>
       <a href="#specs" class="nav-link">Specs</a>
       <a href="#compat" class="nav-link">Compatible</a>
+      <button type="button" class="nav-link js-yt-lightbox-open" data-youtube-id="M7lc1UVf-VE" aria-haspopup="dialog" aria-controls="yt-lightbox">
+        As seen on YouTube
+      </button>
     </div>
 
-    <button class="btn btn-primary" style="font-size:13px;padding:11px 26px;">Pre-Order</button>
+    <button type="button" class="btn btn-primary" style="font-size:13px;padding:11px 26px;" aria-label="Pre-order (coming soon)">Pre-Order</button>
   </div>
 </nav>
+
+<main id="main" tabindex="-1">
 
 <!-- ═══════════════════════════
      HERO
 ═══════════════════════════ -->
-<section class="bg-grid hero-above-fold" style="min-height:100vh;padding-top:66px;padding-bottom:28px;display:flex;align-items:flex-start;position:relative;overflow:hidden;">
+<section class="bg-grid hero-above-fold" style="min-height:100vh;padding-top:66px;padding-bottom:0;display:flex;flex-direction:column;align-items:stretch;position:relative;">
 
-  <div class="w-full max-w-[1300px] mx-auto px-4 pt-6 pb-8 sm:px-6 sm:pt-8 sm:pb-10 lg:px-6 lg:py-12">
+  <div class="hero-above-fold__main w-full max-w-[1300px] mx-auto px-4 pt-6 pb-8 sm:px-6 sm:pt-8 sm:pb-10 lg:px-6 lg:py-12" style="flex:1 1 auto;">
+    <div class="hero-above-fold__reveal">
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-8 lg:items-center">
 
       <div class="order-1 min-w-0">
 
         <div style="display:inline-flex;align-items:center;gap:10px;margin-bottom:18px;padding:8px 16px;border:1px solid rgba(22,22,22,0.1);background:rgba(255,255,255,0.55);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-radius:4px;box-shadow:0 2px 20px rgba(59,155,229,0.08);">
           <span class="pulse-dot" style="width:7px;height:7px;border-radius:50%;background:var(--red);display:inline-block;flex-shrink:0;"></span>
-          <span style="font-family:'Space Mono',monospace;font-size:10px;letter-spacing:0.2em;text-transform:uppercase;color:var(--ink-soft);">Eufy Maker System — Compatible</span>
+          <span style="font-family:'Space Mono',monospace;font-size:10px;letter-spacing:0.14em;text-transform:uppercase;color:var(--ink-soft);">UV resin · Eufy Maker · texture fidelity</span>
         </div>
 
         <h1 class="hero-title font-display font-extrabold leading-none" style="margin-bottom:20px;color:var(--ink);">
@@ -56,11 +75,11 @@
         </h1>
 
         <p style="color:var(--ink-muted);font-size:clamp(15px,3.8vw,17px);line-height:1.65;max-width:460px;margin-bottom:24px;">
-          The <strong style="color:var(--ink);font-weight:500;">mag·na·mat</strong> is a precision-engineered magnetic print surface for the Eufy Maker system. Thousands of micro-pin contacts deliver unmatched adhesion during print — and effortless pop-off release the moment you're done.
+          The <strong style="color:var(--ink);font-weight:500;">mag·na·mat</strong> is a precision-engineered magnetic print surface for the Eufy Maker system. Micro-pin contacts deliver unmatched adhesion during print.
         </p>
 
         <div style="display:flex;gap:14px;flex-wrap:wrap;margin-bottom:28px;">
-          <button class="btn btn-primary" style="font-size:15px;padding:15px 36px;">Pre-Order Now</button>
+          <button type="button" class="btn btn-primary" style="font-size:15px;padding:15px 36px;" aria-label="Pre-order now (coming soon)">Pre-Order Now</button>
           <a href="#specs" class="btn btn-outline" style="font-size:15px;padding:15px 36px;text-decoration:none;">View Specs</a>
         </div>
 
@@ -80,32 +99,32 @@
         </div>
       </div>
 
-      <div class="order-2 min-w-0 lg:order-2">
-        <div id="canvas-container" class="hero-canvas-h" style="position:relative;">
-          <canvas id="mat-canvas"></canvas>
+      <div class="order-2 min-w-0 lg:order-2 hero-product-col">
+        <div class="hero-product-photo" aria-hidden="true"></div>
+        <div id="canvas-container" class="hero-canvas-h hero-product-stage" style="position:relative;">
+          <canvas id="mat-canvas" role="img" tabindex="0" aria-label="Interactive 3D preview of the mag·na·mat build surface. Drag to rotate the view. Add ?adjust=1 to the page URL to enable scroll zoom while tuning the camera."></canvas>
           <div class="font-display font-medium" style="position:absolute;top:14px;left:14px;font-size:9px;color:var(--ink-faint);letter-spacing:0.12em;text-transform:uppercase;pointer-events:none;">mag·na·mat v1.0</div>
           <div style="position:absolute;bottom:14px;right:14px;display:flex;align-items:center;gap:6px;opacity:0.55;pointer-events:none;color:var(--ink-soft);">
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M5 9l-3 3 3 3M9 5l3-3 3 3M15 19l-3 3-3-3M19 9l3 3-3 3"/><line x1="12" y1="2" x2="12" y2="22"/><line x1="2" y1="12" x2="22" y2="12"/></svg>
-            <span style="font-family:'Space Mono',monospace;font-size:9px;letter-spacing:0.1em;">scroll · drag</span>
+            <span style="font-family:'Space Mono',monospace;font-size:9px;letter-spacing:0.1em;">drag to orbit</span>
           </div>
         </div>
       </div>
 
     </div>
+    </div>
   </div>
-</section>
 
-<!-- ═══════════════════════════
-     MARQUEE TICKER
-═══════════════════════════ -->
-<div style="border-top:1px solid var(--border);border-bottom:1px solid var(--border);padding:14px 0;overflow:hidden;background:var(--page-3);">
-  <div class="marquee-track" style="display:inline-block;">
-    <span style="font-family:'Barlow Condensed',sans-serif;font-weight:650;font-size:13px;letter-spacing:0.25em;text-transform:uppercase;color:rgba(22,22,22,0.28);">
+  <!-- Marquee: pinned to bottom of hero / first viewport -->
+  <div class="hero-marquee" aria-hidden="true">
+    <div class="marquee-track" style="display:inline-block;">
+    <span style="font-family:'Barlow Condensed',sans-serif;font-weight:650;font-size:13px;letter-spacing:0.25em;text-transform:uppercase;color:rgba(255,255,255,0.9);">
       MAGNETIC MICRO-PIN MATRIX &nbsp;·&nbsp; FLEX STEEL SUBSTRATE &nbsp;·&nbsp; EUFY MAKER COMPATIBLE &nbsp;·&nbsp; 2,700+ CONTACT POINTS &nbsp;·&nbsp; 255°C RATED &nbsp;·&nbsp; PLA · PETG · ABS · TPU · ASA &nbsp;·&nbsp; 0.01mm TOLERANCE &nbsp;·&nbsp; 1,000+ CYCLE RATING &nbsp;·&nbsp;
       MAGNETIC MICRO-PIN MATRIX &nbsp;·&nbsp; FLEX STEEL SUBSTRATE &nbsp;·&nbsp; EUFY MAKER COMPATIBLE &nbsp;·&nbsp; 2,700+ CONTACT POINTS &nbsp;·&nbsp; 255°C RATED &nbsp;·&nbsp; PLA · PETG · ABS · TPU · ASA &nbsp;·&nbsp; 0.01mm TOLERANCE &nbsp;·&nbsp; 1,000+ CYCLE RATING &nbsp;·&nbsp;
     </span>
+    </div>
   </div>
-</div>
+</section>
 
 <!-- ═══════════════════════════
      FEATURES
@@ -113,7 +132,7 @@
 <section id="features" style="padding:110px 24px;background:var(--page-2);position:relative;overflow:hidden;">
 
   <div style="position:absolute;top:20%;left:0;width:1px;height:280px;background:linear-gradient(to bottom,transparent,rgba(229,52,42,0.2),transparent);transform:rotate(20deg);transform-origin:top;pointer-events:none;"></div>
-  <div style="position:absolute;top:40%;right:0;width:1px;height:280px;background:linear-gradient(to bottom,transparent,rgba(59,155,229,0.2),transparent);transform:rotate(-20deg);transform-origin:top;pointer-events:none;"></div>
+  <div style="position:absolute;top:40%;right:0;width:1px;height:280px;background:linear-gradient(to bottom,transparent,rgba(0,0,0,0.18),transparent);transform:rotate(-20deg);transform-origin:top;pointer-events:none;"></div>
 
   <div style="max-width:1300px;margin:0 auto;">
 
@@ -137,7 +156,7 @@
       </div>
 
       <div class="f-card reveal" style="transition-delay:0.12s;">
-        <div style="width:50px;height:50px;border-radius:6px;background:rgba(59,155,229,0.08);border:1px solid rgba(59,155,229,0.22);display:flex;align-items:center;justify-content:center;margin-bottom:22px;">
+        <div style="width:50px;height:50px;border-radius:6px;background:rgba(0,0,0,0.05);border:1px solid rgba(0,0,0,0.12);display:flex;align-items:center;justify-content:center;margin-bottom:22px;">
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#3B9BE5" stroke-width="1.5"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
         </div>
         <h3 class="font-display font-semibold" style="font-size:1.6rem;margin-bottom:12px;color:var(--ink);">Flex-Release Tech</h3>
@@ -151,7 +170,7 @@
             <div class="font-display font-semibold" style="font-size:18px;color:var(--ink);">Hold</div>
             <div style="font-size:9px;color:var(--ink-soft);font-family:'Space Mono',monospace;margin-top:3px;">during print</div>
           </div>
-          <div style="flex:1;padding:12px;background:rgba(59,155,229,0.06);border:1px solid rgba(59,155,229,0.15);text-align:center;border-radius:4px;">
+          <div style="flex:1;padding:12px;background:rgba(0,0,0,0.05);border:1px solid rgba(0,0,0,0.1);text-align:center;border-radius:4px;">
             <div class="font-display font-semibold" style="font-size:18px;color:var(--blue);">Pop</div>
             <div style="font-size:9px;color:var(--ink-soft);font-family:'Space Mono',monospace;margin-top:3px;">when done</div>
           </div>
@@ -192,8 +211,8 @@
         </h2>
 
         <div class="pin-tex" style="height:210px;border:1px solid var(--border);position:relative;overflow:hidden;border-radius:6px;">
-          <div style="position:absolute;inset:0;background:linear-gradient(135deg,rgba(229,52,42,0.1) 0%,transparent 50%,rgba(59,155,229,0.1) 100%);"></div>
-          <div style="position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgba(59,155,229,0.35),transparent);"></div>
+          <div style="position:absolute;inset:0;background:linear-gradient(135deg,rgba(229,52,42,0.1) 0%,transparent 50%,rgba(0,0,0,0.1) 100%);"></div>
+          <div style="position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgba(0,0,0,0.22),transparent);"></div>
           <div style="position:absolute;bottom:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgba(229,52,42,0.35),transparent);"></div>
           <div style="position:absolute;bottom:16px;left:16px;font-family:'Space Mono',monospace;font-size:9px;color:rgba(255,255,255,0.45);letter-spacing:0.12em;text-transform:uppercase;">pin matrix surface / 60× sim</div>
         </div>
@@ -261,8 +280,8 @@
 <section id="compat" style="padding:110px 24px;background:var(--card);text-align:center;position:relative;overflow:hidden;">
 
   <div style="position:absolute;top:50%;left:50%;pointer-events:none;z-index:0;">
-    <div class="ring" style="width:700px;height:700px;border-width:1px;border-color:rgba(59,155,229,0.14);"></div>
-    <div class="ring" style="width:530px;height:530px;border-width:1px;border-color:rgba(59,155,229,0.18);"></div>
+    <div class="ring" style="width:700px;height:700px;border-width:1px;border-color:rgba(0,0,0,0.12);"></div>
+    <div class="ring" style="width:530px;height:530px;border-width:1px;border-color:rgba(0,0,0,0.16);"></div>
     <div class="ring" style="width:370px;height:370px;border-width:1px;border-color:rgba(229,52,42,0.14);"></div>
     <div class="ring" style="width:220px;height:220px;border-width:1px;border-color:rgba(229,52,42,0.18);"></div>
     <div class="ring" style="width:100px;height:100px;border-width:1px;border-color:rgba(229,52,42,0.22);"></div>
@@ -295,10 +314,29 @@
     </div>
 
     <div class="reveal" style="transition-delay:0.3s;">
-      <button class="btn btn-primary" style="font-size:17px;padding:18px 52px;">Get Your mag·na·mat</button>
+      <button type="button" class="btn btn-primary" style="font-size:17px;padding:18px 52px;" aria-label="Get your mag·na·mat (coming soon)">Get Your mag·na·mat</button>
     </div>
   </div>
 </section>
+
+</main>
+
+<!-- YouTube lightbox (opened from nav “As seen on YouTube”) — set data-youtube-id on .js-yt-lightbox-open -->
+<div id="yt-lightbox" class="yt-lightbox" role="dialog" aria-modal="true" aria-label="YouTube video" hidden>
+  <div class="yt-lightbox__backdrop js-yt-lightbox-close" tabindex="-1"></div>
+  <div class="yt-lightbox__dialog">
+    <button type="button" class="yt-lightbox__close js-yt-lightbox-close" aria-label="Close video">×</button>
+    <div class="yt-embed yt-embed--lightbox">
+      <iframe
+        id="yt-lightbox-iframe"
+        title="YouTube"
+        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+        allowfullscreen
+        referrerpolicy="strict-origin-when-cross-origin"
+      ></iframe>
+    </div>
+  </div>
+</div>
 
 <!-- ═══════════════════════════
      FOOTER
@@ -306,7 +344,7 @@
 <footer style="border-top:1px solid var(--border);padding:36px 24px;background:var(--page-2);">
   <div style="max-width:1300px;margin:0 auto;display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:18px;">
     <div class="logo logo-mark logo-mark--footer">
-      <img src="images/logo.png" alt="mag·na·mat" width="1024" height="350" decoding="async" loading="lazy">
+      <img src="images/logo-transparent.svg" alt="mag·na·mat" width="1024" height="350" decoding="async" loading="lazy">
     </div>
     <p style="font-family:'Space Mono',monospace;font-size:9px;color:var(--ink-faint);letter-spacing:0.12em;text-transform:uppercase;">© 2026 mag·na·mat — Precision Magnetic Surfaces</p>
     <div style="display:flex;gap:24px;">
@@ -317,6 +355,9 @@
   </div>
 </footer>
 
+<noscript>
+  <p style="max-width:36rem;margin:1rem auto;padding:1rem 1.25rem;font-size:14px;line-height:1.5;color:#555;text-align:center;border:1px solid rgba(0,0,0,0.1);border-radius:8px;background:#fff;">Enable JavaScript to see the interactive 3D product preview. The rest of this page is readable without it.</p>
+</noscript>
 <script type="importmap">
 {
   "imports": {
@@ -327,6 +368,7 @@
 </script>
 <script type="module" src="js/main.mjs"></script>
 <script type="module" src="js/nav-spy.mjs"></script>
+<script type="module" src="js/yt-lightbox.mjs"></script>
 
 </body>
 </html>

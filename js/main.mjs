@@ -43,6 +43,8 @@ function showCanvasError(container, message) {
 }
 
 const VIEW_PRESET_STORAGE_KEY = 'magnamat-view-preset';
+/** Orbit radius only — applied after full view / code defaults so you can lock wheel zoom separately */
+const ZOOM_PRESET_STORAGE_KEY = 'magnamat-default-zoom';
 
 function loadViewPreset() {
   try {
@@ -66,6 +68,57 @@ function loadViewPreset() {
     }
   } catch (_) {}
   return null;
+}
+
+function loadZoomOnlyPreset() {
+  try {
+    const raw = localStorage.getItem(ZOOM_PRESET_STORAGE_KEY);
+    if (!raw) return null;
+    const p = JSON.parse(raw);
+    if (p && p.v === 1 && typeof p.distance === 'number' && Number.isFinite(p.distance)) {
+      return p.distance;
+    }
+  } catch (_) {}
+  return null;
+}
+
+/** Re-place camera on same polar/azimuth, new orbit distance (clamped to OrbitControls limits). */
+function applyOrbitDistance(camera, controls, distance) {
+  const clamped = THREE.MathUtils.clamp(distance, controls.minDistance, controls.maxDistance);
+  const off = camera.position.clone().sub(controls.target);
+  const sph = new THREE.Spherical().setFromVector3(off);
+  sph.radius = clamped;
+  camera.position.setFromSpherical(sph).add(controls.target);
+  camera.lookAt(controls.target);
+  controls.update();
+}
+
+function orbitDistance(camera, controls) {
+  return new THREE.Spherical().setFromVector3(camera.position.clone().sub(controls.target)).radius;
+}
+
+/** Persist zoom; if a full view preset exists, keep its distance in sync. */
+function persistZoomPreset(distance, controls) {
+  const clamped = THREE.MathUtils.clamp(distance, controls.minDistance, controls.maxDistance);
+  localStorage.setItem(ZOOM_PRESET_STORAGE_KEY, JSON.stringify({ v: 1, distance: clamped }));
+  try {
+    const raw = localStorage.getItem(VIEW_PRESET_STORAGE_KEY);
+    if (!raw) return;
+    const p = JSON.parse(raw);
+    if (p && p.v === 1) {
+      p.distance = clamped;
+      localStorage.setItem(VIEW_PRESET_STORAGE_KEY, JSON.stringify(p));
+    }
+  } catch (_) {}
+}
+
+function clearZoomPreset() {
+  localStorage.removeItem(ZOOM_PRESET_STORAGE_KEY);
+}
+
+function formatZoomSnippet(camera, controls) {
+  const d = THREE.MathUtils.clamp(orbitDistance(camera, controls), controls.minDistance, controls.maxDistance);
+  return `// Default orbit zoom — replace CAM_DISTANCE in startScene() (non–view-preset branch)\nconst CAM_DISTANCE = ${d.toFixed(5)};`;
 }
 
 function captureViewPreset(camera, controls, matGroup) {
@@ -115,7 +168,7 @@ function formatPresetAsMainSnippet(p) {
 }
 
 function installViewTuner(container, ctx) {
-  if (new URLSearchParams(window.location.search).get('adjust') !== '1') return;
+  if (!ctx.isAdjustMode) return;
 
   const { camera, controls, matGroup } = ctx;
   const wrap = document.createElement('div');
@@ -130,7 +183,7 @@ function installViewTuner(container, ctx) {
   const hint = document.createElement('p');
   hint.style.cssText = 'margin:0 0 10px;color:#555;font-size:11px;line-height:1.45;';
   hint.textContent =
-    'Orbit the mat with the mouse. Save stores this browser’s default until cleared. Copy gives code to paste into main.mjs for the repo. Remove ?adjust=1 from the URL to hide this panel.';
+    'Orbit with drag; zoom with scroll wheel on the canvas. Save stores the full view; Save default zoom stores orbit distance only (works with or without a full lock). Clear removes both. Remove ?adjust=1 to hide this panel.';
 
   const readout = document.createElement('pre');
   readout.style.cssText =
@@ -138,7 +191,7 @@ function installViewTuner(container, ctx) {
 
   function refreshReadout() {
     const p = captureViewPreset(camera, controls, matGroup);
-    readout.textContent = `distance ${p.distance.toFixed(3)} · polar° ${p.polarDeg.toFixed(2)} · azimuth° ${p.azimuthDeg.toFixed(2)}\ntarget [${p.target.map((n) => n.toFixed(4)).join(', ')}]\nmat rad x ${p.mat.x.toFixed(4)} y ${p.mat.y.toFixed(4)} z ${p.mat.z.toFixed(4)}`;
+    readout.textContent = `zoom (orbit distance) ${p.distance.toFixed(3)}  ·  polar° ${p.polarDeg.toFixed(2)}  ·  azimuth° ${p.azimuthDeg.toFixed(2)}\ntarget [${p.target.map((n) => n.toFixed(4)).join(', ')}]\nmat rad x ${p.mat.x.toFixed(4)} y ${p.mat.y.toFixed(4)} z ${p.mat.z.toFixed(4)}`;
   }
 
   function btn(label, primary) {
@@ -155,11 +208,37 @@ function installViewTuner(container, ctx) {
   bSave.addEventListener('click', () => {
     const p = captureViewPreset(camera, controls, matGroup);
     localStorage.setItem(VIEW_PRESET_STORAGE_KEY, JSON.stringify(p));
+    persistZoomPreset(p.distance, controls);
     bSave.textContent = 'Saved ✓';
     setTimeout(() => {
       bSave.textContent = 'Save as locked default';
     }, 1600);
     console.info('[magnamat] View saved to localStorage. Reload the page (you can drop ?adjust=1) to confirm.');
+  });
+
+  const bSaveZoom = btn('Save default zoom', false);
+  bSaveZoom.addEventListener('click', () => {
+    persistZoomPreset(orbitDistance(camera, controls), controls);
+    bSaveZoom.textContent = 'Zoom saved ✓';
+    setTimeout(() => {
+      bSaveZoom.textContent = 'Save default zoom';
+    }, 1600);
+    console.info('[magnamat] Default orbit zoom saved (localStorage). Reload to confirm from cold load.');
+  });
+
+  const bCopyZoom = btn('Copy zoom line', false);
+  bCopyZoom.addEventListener('click', async () => {
+    const text = formatZoomSnippet(camera, controls);
+    try {
+      await navigator.clipboard.writeText(text);
+      bCopyZoom.textContent = 'Copied ✓';
+      setTimeout(() => {
+        bCopyZoom.textContent = 'Copy zoom line';
+      }, 1400);
+    } catch {
+      console.log(text);
+      alert('Copy failed — printed to console.');
+    }
   });
 
   const bCopy = btn('Copy main.mjs snippet', false);
@@ -180,10 +259,11 @@ function installViewTuner(container, ctx) {
   const bClear = btn('Clear saved lock', false);
   bClear.addEventListener('click', () => {
     localStorage.removeItem(VIEW_PRESET_STORAGE_KEY);
+    clearZoomPreset();
     window.location.reload();
   });
 
-  wrap.append(title, hint, readout, bSave, bCopy, bClear);
+  wrap.append(title, hint, readout, bSave, bSaveZoom, bCopyZoom, bCopy, bClear);
   container.appendChild(wrap);
 
   controls.addEventListener('change', refreshReadout);
@@ -191,6 +271,8 @@ function installViewTuner(container, ctx) {
 }
 
 function startScene(container, canvas) {
+  const isAdjustMode = new URLSearchParams(window.location.search).get('adjust') === '1';
+
   let { w: W, h: H } = readCanvasSize(container);
   if (W < 32 || H < 32) {
     W = Math.max(W, 640);
@@ -203,6 +285,8 @@ function startScene(container, canvas) {
       canvas,
       antialias: true,
       alpha: true,
+      /* Better composite over the hero photo (CSS) under the canvas */
+      premultipliedAlpha: false,
       logarithmicDepthBuffer: true,
       powerPreference: 'high-performance',
     });
@@ -225,14 +309,15 @@ function startScene(container, canvas) {
   const scene = new THREE.Scene();
 
   /*
-   * Soft WebGL wash behind the mat — large sphere + vertical-only mix so it reads as ambient
-   * light, not a visible “disc” behind the product (small spheres + angular shaders read as a circle).
+   * Soft WebGL wash behind the mat only (grayscale). Mat / lights / materials unchanged.
+   * Large sphere + vertical mix — reads as ambient, not a visible “disc”.
    */
   const skyUniforms = { uTime: { value: 0 } };
   const skyMat = new THREE.ShaderMaterial({
     side: THREE.BackSide,
     depthWrite: false,
     depthTest: true,
+    transparent: true,
     uniforms: skyUniforms,
     vertexShader: `
       varying vec3 vPos;
@@ -247,17 +332,26 @@ function startScene(container, canvas) {
       void main() {
         vec3 d = normalize(vPos);
         float h = d.y * 0.5 + 0.5;
-        float drift = sin(uTime * 0.085 + h * 3.8) * 0.028;
-        vec3 cream = vec3(0.94, 0.92, 0.89);
-        vec3 blue = vec3(0.32, 0.54, 0.86);
-        vec3 deep = vec3(0.14, 0.18, 0.26);
-        vec3 col = mix(cream, blue, h * 0.5 + drift);
-        col = mix(col, deep, (1.0 - h) * 0.1);
-        gl_FragColor = vec4(clamp(col, 0.0, 1.0), 1.0);
+        float drift = sin(uTime * 0.085 + h * 3.8) * 0.035;
+        /*
+         * Neutral wash with real tonal range (not “white at 50% alpha”, which lets the
+         * page’s blue hero CSS dominate). Still background-only; mat materials unchanged.
+         */
+        vec3 hi = vec3(0.82);
+        vec3 mid = vec3(0.38);
+        vec3 lo = vec3(0.05);
+        vec3 col = mix(hi, mid, h * 0.55 + drift);
+        col = mix(col, lo, (1.0 - h) * 0.22);
+        col = clamp(col, 0.0, 1.0);
+        /* Higher alpha so this layer reads as B&W, not a tint of the HTML behind */
+        float washAlpha = 0.62 + h * 0.2;
+        gl_FragColor = vec4(col, washAlpha);
       }
     `,
   });
-  scene.add(new THREE.Mesh(new THREE.SphereGeometry(220, 32, 24), skyMat));
+  const skyMesh = new THREE.Mesh(new THREE.SphereGeometry(220, 32, 24), skyMat);
+  skyMesh.renderOrder = -1000;
+  scene.add(skyMesh);
 
   const camera = new THREE.PerspectiveCamera(45, W / H, 0.35, 80);
 
@@ -266,6 +360,8 @@ function startScene(container, canvas) {
   controls.dampingFactor = 0.09;
   controls.autoRotate = false;
   controls.enablePan = false;
+  /* Wheel / pinch zoom only while tuning (?adjust=1); normal page keeps scroll for the document */
+  controls.enableZoom = isAdjustMode;
   controls.minDistance = 5.5;
   controls.maxDistance = 28;
   /* Let you orbit more overhead without hitting the clamp */
@@ -296,7 +392,7 @@ function startScene(container, canvas) {
      * Uses THREE.Spherical: phi = angle down from +Y (smaller ° = more bird’s-eye / “overhead”).
      * azimuth = spin around Y (try ~115–140° for front-right vs front-left on the mat).
      */
-    const CAM_DISTANCE = 18.5;
+    const CAM_DISTANCE = 16.35;
     const CAM_POLAR_DEG = 38;
     const CAM_AZIMUTH_DEG = 128;
     camSph = new THREE.Spherical(
@@ -308,6 +404,11 @@ function startScene(container, canvas) {
   camera.position.setFromSpherical(camSph).add(orbitTarget);
   camera.lookAt(orbitTarget);
   controls.update();
+
+  const zoomOnly = loadZoomOnlyPreset();
+  if (zoomOnly !== null) {
+    applyOrbitDistance(camera, controls, zoomOnly);
+  }
 
   scene.add(new THREE.AmbientLight(0xffffff, 0.48));
   scene.add(new THREE.HemisphereLight(0xe8f4ff, 0x3a4f5c, 0.26));
@@ -439,12 +540,92 @@ function startScene(container, canvas) {
   topAffix.receiveShadow = true;
   matGroup.add(topAffix);
 
+  /*
+   * Jig tooling on the top sheet (additive only): registration barbs + one held blank.
+   * Parent is topAffix so it travels with the blue layer; core mat / pins untouched.
+   */
+  const jigRoot = new THREE.Group();
+  jigRoot.position.set(0, AFFIX_THICK / 2 + 0.0015, 0);
+  topAffix.add(jigRoot);
+
+  const BARB_H = 0.115;
+  const barbGeo = new THREE.CylinderGeometry(0.036, 0.024, BARB_H, 12);
+  const barbMat = new THREE.MeshStandardMaterial({
+    color: 0x3a434c,
+    roughness: 0.4,
+    metalness: 0.48,
+  });
+  const hw = 1.02;
+  const hd = 0.76;
+  const barbInset = 0.072;
+  const bx = hw + barbInset;
+  const bz = hd + barbInset;
+  [
+    [bx, bz],
+    [bx, -bz],
+    [-bx, bz],
+    [-bx, -bz],
+    [0, bz + 0.055],
+    [0, -(bz + 0.055)],
+    [-(bx + 0.085), 0],
+    [bx + 0.085, 0],
+  ].forEach(([x, z]) => {
+    const peg = new THREE.Mesh(barbGeo, barbMat);
+    peg.position.set(x, BARB_H / 2, z);
+    peg.castShadow = true;
+    peg.receiveShadow = true;
+    jigRoot.add(peg);
+  });
+
+  const itemW = hw * 2;
+  const itemD = hd * 2;
+  const itemH = 0.09;
+  const itemGeo = new THREE.BoxGeometry(itemW, itemH, itemD);
+  const itemBodyMat = new THREE.MeshStandardMaterial({
+    color: 0xb4bcc4,
+    roughness: 0.68,
+    metalness: 0.07,
+  });
+  const itemTopMat = new THREE.MeshStandardMaterial({
+    color: 0xffffff,
+    roughness: 0.62,
+    metalness: 0.04,
+  });
+  /* Box materials: +x,-x,+y(top),-y,+z,-z */
+  const heldBlankMesh = new THREE.Mesh(itemGeo, [
+    itemBodyMat,
+    itemBodyMat,
+    itemTopMat,
+    itemBodyMat,
+    itemBodyMat,
+    itemBodyMat,
+  ]);
+  heldBlankMesh.position.set(0, 0.007 + itemH / 2, 0);
+  heldBlankMesh.castShadow = true;
+  heldBlankMesh.receiveShadow = true;
+  jigRoot.add(heldBlankMesh);
+
+  const PRINT_DEMO_URL = new URL('../images/print-demo-chicago-bean.png', import.meta.url).href;
+  new THREE.TextureLoader().load(
+    PRINT_DEMO_URL,
+    (tex) => {
+      tex.colorSpace = THREE.SRGBColorSpace;
+      tex.anisotropy = Math.min(8, renderer.capabilities.getMaxAnisotropy());
+      tex.wrapS = THREE.ClampToEdgeWrapping;
+      tex.wrapT = THREE.ClampToEdgeWrapping;
+      itemTopMat.map = tex;
+      itemTopMat.needsUpdate = true;
+    },
+    undefined,
+    () => console.warn('[magnamat] Print demo texture failed to load:', PRINT_DEMO_URL)
+  );
+
   const baseBottomY = bottomAffix.position.y;
   const baseTopY = topAffix.position.y;
   /* Scroll-driven spread */
-  const SEP_BOTTOM = 0.68;
-  const SEP_TOP = 0.68;
-  const SEP_CORE = 0.2;
+  const SEP_BOTTOM = 0.86;
+  const SEP_TOP = 0.86;
+  const SEP_CORE = 0.28;
   /* Extra motion on hover only (adds on top of scroll spread) */
   const HOVER_EXTRA_BOTTOM = 0.92;
   const HOVER_EXTRA_TOP = 0.92;
@@ -466,8 +647,20 @@ function startScene(container, canvas) {
     window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
   /**
-   * 0 = hero rest, 1 = fully “arrived” after a long scroll (smoothstep).
-   * Range scales with viewport so the effect stays readable on tall pages.
+   * Pin stack separation: reaches ~1 quickly so the hero still shows the
+   * full “exploded” read (smoothstep). Independent of the slower page “travel”.
+   */
+  function stackSeparationProgress() {
+    const vh = window.innerHeight || 1;
+    const scrollY = window.scrollY || document.documentElement.scrollTop || 0;
+    /* ~½ viewport scroll to full spread — visible in hero without going extreme */
+    const range = Math.max(vh * 0.52, 280);
+    const u = THREE.MathUtils.clamp(scrollY / range, 0, 1);
+    return u * u * (3 - 2 * u);
+  }
+
+  /**
+   * 0 = rest, 1 = fully “arrived” after a longer scroll (smoothstep) — used for hero3dRoot travel only.
    */
   function scrollStoryProgress() {
     const vh = window.innerHeight || 1;
@@ -535,12 +728,33 @@ function startScene(container, canvas) {
       saveLockedView() {
         const p = captureViewPreset(camera, controls, matGroup);
         localStorage.setItem(VIEW_PRESET_STORAGE_KEY, JSON.stringify(p));
+        persistZoomPreset(p.distance, controls);
         console.info('[magnamat] View saved to localStorage (same as panel “Save”). Reload to apply if you changed code paths.');
         return p;
       },
+      saveDefaultZoom() {
+        persistZoomPreset(orbitDistance(camera, controls), controls);
+        console.info('[magnamat] Default zoom saved to localStorage key magnamat-default-zoom.');
+        return orbitDistance(camera, controls);
+      },
       clearLockedView() {
         localStorage.removeItem(VIEW_PRESET_STORAGE_KEY);
-        console.info('[magnamat] Cleared saved view. Reload to use file defaults.');
+        clearZoomPreset();
+        console.info('[magnamat] Cleared saved view and default zoom. Reload to use file defaults.');
+      },
+      clearDefaultZoom() {
+        clearZoomPreset();
+        console.info('[magnamat] Cleared magnamat-default-zoom only. Reload to drop zoom override.');
+      },
+      copyZoomLineSnippet() {
+        const text = formatZoomSnippet(camera, controls);
+        if (navigator.clipboard?.writeText) {
+          navigator.clipboard.writeText(text).then(
+            () => console.info('[magnamat] Zoom line copied.'),
+            () => console.log(text)
+          );
+        } else console.log(text);
+        return text;
       },
       async copyLockedViewSnippet() {
         const text = formatPresetAsMainSnippet(captureViewPreset(camera, controls, matGroup));
@@ -582,9 +796,9 @@ function startScene(container, canvas) {
       },
     };
     console.info(
-      '[magnamat] Quick tune: add ?adjust=1 for a save/copy panel — or edit CAM_* in main.mjs — or __magnamatScene.logDefaultAngle() / saveLockedView() / copyLockedViewSnippet()'
+      '[magnamat] Quick tune: ?adjust=1 panel — or CAM_* in main.mjs — or __magnamatScene.saveLockedView() / saveDefaultZoom() / copyLockedViewSnippet() / copyZoomLineSnippet()'
     );
-    installViewTuner(container, { camera, controls, matGroup });
+    installViewTuner(container, { camera, controls, matGroup, isAdjustMode });
   }
 
   const fieldGroup = new THREE.Group();
@@ -649,24 +863,31 @@ function startScene(container, canvas) {
 
   hero3dRoot.add(fieldGroup);
 
+  let tabSuspended = false;
+  document.addEventListener('visibilitychange', () => {
+    tabSuspended = document.visibilityState === 'hidden';
+  });
+
   let tick = 0;
   function animate() {
     requestAnimationFrame(animate);
+    if (tabSuspended) return;
     tick++;
 
     if (pointerOverCanvas) {
       updatePointerRay(lastClientX, lastClientY);
     }
 
-    const sepEase = 0.1;
+    const sepEase = 0.12;
     const travelEase = 0.062;
-    const scrollTarget = scrollStoryProgress();
-    openAmount += (scrollTarget - openAmount) * sepEase;
-    travelAmount += (scrollTarget - travelAmount) * travelEase;
+    const stackTarget = stackSeparationProgress();
+    const storyTarget = scrollStoryProgress();
+    openAmount += (stackTarget - openAmount) * sepEase;
+    travelAmount += (storyTarget - travelAmount) * travelEase;
     hoverExtra += (hoverStack - hoverExtra) * 0.15;
 
     /* Stronger spread at end of scroll arc so pins read clearly */
-    const sepBoost = 1 + openAmount * 0.28;
+    const sepBoost = 1 + openAmount * 0.26;
     bottomAffix.position.y =
       baseBottomY - openAmount * SEP_BOTTOM * sepBoost - hoverExtra * HOVER_EXTRA_BOTTOM;
     coreGroup.position.y = openAmount * SEP_CORE * sepBoost + hoverExtra * HOVER_EXTRA_CORE;
