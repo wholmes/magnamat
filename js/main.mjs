@@ -358,6 +358,14 @@ function installSecondaryMatCallouts({ container, W, H, coreGroup, topAffix, bot
   return labelRenderer;
 }
 
+/** Phones / touch-primary tablets: one-finger orbit steals vertical scroll — lock unless ?adjust=1 */
+function touchPrimaryOrNarrowForOrbit() {
+  if (typeof window === 'undefined' || !window.matchMedia) return false;
+  if (window.matchMedia('(max-width: 767px)').matches) return true;
+  if (window.matchMedia('(hover: none) and (pointer: coarse)').matches) return true;
+  return false;
+}
+
 function startScene(container, canvas, options = {}) {
   const isSecondary = options.secondary === true;
   const isAdjustMode = !isSecondary && new URLSearchParams(window.location.search).get('adjust') === '1';
@@ -452,6 +460,23 @@ function startScene(container, canvas, options = {}) {
   controls.enablePan = false;
   /* Wheel / pinch zoom only while tuning (?adjust=1); normal page keeps scroll for the document */
   controls.enableZoom = isAdjustMode;
+  function applyTouchOrbitPolicy() {
+    const lockRotate = touchPrimaryOrNarrowForOrbit() && !isAdjustMode;
+    controls.enableRotate = !lockRotate;
+  }
+  applyTouchOrbitPolicy();
+  if (typeof window !== 'undefined' && window.matchMedia) {
+    const mqNarrow = window.matchMedia('(max-width: 767px)');
+    const mqTouch = window.matchMedia('(hover: none) and (pointer: coarse)');
+    const onOrbitMediaChange = () => applyTouchOrbitPolicy();
+    if (mqNarrow.addEventListener) {
+      mqNarrow.addEventListener('change', onOrbitMediaChange);
+      mqTouch.addEventListener('change', onOrbitMediaChange);
+    } else {
+      mqNarrow.addListener(onOrbitMediaChange);
+      mqTouch.addListener(onOrbitMediaChange);
+    }
+  }
   controls.minDistance = 5.5;
   controls.maxDistance = 28;
   /* Let you orbit more overhead without hitting the clamp */

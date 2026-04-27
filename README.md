@@ -24,7 +24,7 @@ Precision-engineered **magnetic print surface** for the Eufy Maker system: thous
 
 | Stat | Label |
 |------|--------|
-| **2,700+** | Pin contacts |
+| **250+** | Pin contacts |
 | **255°C** | Max bed temp |
 | **0.1s** | Release time |
 
@@ -35,7 +35,7 @@ Blue gradient bar with white uppercase ticker text. Phrases include:
 - Magnetic micro-pin matrix  
 - Flex steel substrate  
 - Eufy Maker compatible  
-- 2,700+ contact points  
+- 250+ contact points  
 - 255°C rated  
 - PLA · PETG · ABS · TPU · ASA  
 - 0.01mm tolerance  
@@ -52,7 +52,7 @@ Animation: infinite horizontal scroll (`css/styles.css` — `.marquee-track`, ~2
 
 ### Card 1 — Micro-Pin Matrix
 
-- **2,700+** individually tuned magnetic contact pins, distributed grip, **no dead zones**, even adhesion **edge to edge**.
+- **250+** individually tuned magnetic contact pins, distributed grip, **no dead zones**, even adhesion **edge to edge**.
 - Visual: pin texture block labeled **60× magnified surface pattern** (decorative / sim, not literal microscopy).
 
 ### Card 2 — Flex-Release Tech
@@ -84,7 +84,7 @@ Animation: infinite horizontal scroll (`css/styles.css` — `.marquee-track`, ~2
 | Field | Value |
 |-------|--------|
 | Build surface | **235 × 235 mm** |
-| Pin count | **2,700+** |
+| Pin count | **250+** |
 | Max bed temp | **255°C** |
 | Surface tolerance | **±0.01 mm** |
 | Substrate | **Flex spring steel** |

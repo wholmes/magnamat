@@ -543,8 +543,45 @@ body::after {
   -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
 }
 
-/* Concentric ring decoration */
-.ring { border-radius: 50%; border-style: solid; position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%); }
+/* Concentric ring decoration — compat “target” */
+.compat-rings {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  pointer-events: none;
+  z-index: 0;
+}
+.ring {
+  border-radius: 50%;
+  border-style: solid;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 0;
+}
+/* Soft white hub over inner rings; fades out so outer rings stay crisp */
+.compat-rings__burst {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 1;
+  width: min(112vw, 860px);
+  height: min(112vw, 860px);
+  border-radius: 50%;
+  /* Stronger hub under headline/body so type isn’t fighting ring texture */
+  background: radial-gradient(
+    circle at 50% 50%,
+    #ffffff 0%,
+    #ffffff 18%,
+    rgba(255, 255, 255, 0.92) 34%,
+    rgba(255, 255, 255, 0.55) 52%,
+    rgba(255, 255, 255, 0.18) 72%,
+    rgba(255, 255, 255, 0) 90%
+  );
+  pointer-events: none;
+}
 
 /* Stats number */
 .stat-num {
