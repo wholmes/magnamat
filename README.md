@@ -155,7 +155,8 @@ CSS custom properties (high level):
 - **Scroll “travel”:** `hero3dRoot` group wraps mat + field lines; long-scroll smoothstep drives **tilt / lift / drift** so the stack moves in frame without fighting orbit. **`prefers-reduced-motion: reduce`** disables that world travel (stack spread still follows scroll).
 - **Default camera (no saved preset):** spherical placement around orbit target; default distance **`CAM_DISTANCE = 16.35`**, polar **38°**, azimuth **128°** (tune in code).
 - **View lock-in**
-  - **`?adjust=1`:** panel to save view to **`localStorage`** key `magnamat-view-preset`, copy a **`main.mjs` snippet**, or clear.
+  - **`?adjust=1`:** panel to save view to **`localStorage`** key `magnamat-view-preset`, copy a **`main.mjs` snippet**, or clear. That save is **only on your machine** until you paste into the repo.
+  - **Default for every visitor:** use **Copy main.mjs snippet** (or `__magnamatScene.copyLockedViewSnippet()`), replace the **`else`** branch defaults in `startScene()` — the `CAM_DISTANCE` / `CAM_POLAR_DEG` / `CAM_AZIMUTH_DEG` + `orbitTarget` block and the default **`matGroup.rotation`** lines — then commit and deploy. Optional: drop the `loadViewPreset()` branches if you no longer want localStorage to override shipped angles.
   - **Console:** `window.__magnamatScene` — `saveLockedView()`, `clearLockedView()`, `copyLockedViewSnippet()`, `logDefaultAngle()` (alternate debug paste).
 
 ---

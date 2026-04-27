@@ -184,7 +184,7 @@ function installViewTuner(container, ctx) {
   const hint = document.createElement('p');
   hint.style.cssText = 'margin:0 0 10px;color:#555;font-size:11px;line-height:1.45;';
   hint.textContent =
-    'Orbit with drag; zoom with scroll wheel on the canvas. Save stores the full view; Save default zoom stores orbit distance only (works with or without a full lock). Clear removes both. Remove ?adjust=1 to hide this panel.';
+    'Orbit with drag; scroll zoom on the canvas. Save / Save default zoom write to this browser only (localStorage). To set the same angle for every visitor: click Copy main.mjs snippet, paste into startScene() over the default CAM_* + orbitTarget block and the else matGroup.rotation values, commit, deploy. Clear removes local overrides. Remove ?adjust=1 to hide this panel.';
 
   const readout = document.createElement('pre');
   readout.style.cssText =
