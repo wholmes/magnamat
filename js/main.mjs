@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import { CSS2DObject, CSS2DRenderer } from 'three/addons/renderers/CSS2DRenderer.js';
 
 /* ── Scroll reveal: IO + sync pass so above-the-fold blocks are not stuck at opacity 0 ── */
 function setupReveal() {
@@ -270,8 +271,96 @@ function installViewTuner(container, ctx) {
   refreshReadout();
 }
 
-function startScene(container, canvas) {
-  const isAdjustMode = new URLSearchParams(window.location.search).get('adjust') === '1';
+/** Leader lines + CSS2D labels on mat meshes — secondary canvas only; follows orbit + stack spread */
+function installSecondaryMatCallouts({ container, W, H, coreGroup, topAffix, bottomAffix, AFFIX_THICK }) {
+  const labelRenderer = new CSS2DRenderer();
+  labelRenderer.setSize(W, H);
+  labelRenderer.domElement.style.cssText =
+    'position:absolute;inset:0;pointer-events:none;z-index:3;';
+
+  const canvasEl = container.querySelector('canvas');
+  if (canvasEl?.nextSibling) container.insertBefore(labelRenderer.domElement, canvasEl.nextSibling);
+  else container.appendChild(labelRenderer.domElement);
+
+  function addLeader(parent, ax, ay, az, bx, by, bz) {
+    const geom = new THREE.BufferGeometry().setFromPoints([
+      new THREE.Vector3(ax, ay, az),
+      new THREE.Vector3(bx, by, bz),
+    ]);
+    const mat = new THREE.LineBasicMaterial({
+      color: 0x2a2a2a,
+      transparent: true,
+      opacity: 0.48,
+      depthTest: false,
+      depthWrite: false,
+    });
+    const line = new THREE.Line(geom, mat);
+    line.renderOrder = 10000;
+    parent.add(line);
+  }
+
+  function addDot(parent, x, y, z, color) {
+    const mesh = new THREE.Mesh(
+      new THREE.SphereGeometry(0.09, 10, 10),
+      new THREE.MeshBasicMaterial({
+        color,
+        depthTest: false,
+        depthWrite: false,
+        transparent: true,
+        opacity: 0.92,
+      })
+    );
+    mesh.position.set(x, y, z);
+    mesh.renderOrder = 10001;
+    parent.add(mesh);
+  }
+
+  function makeLabel(text, accentClass) {
+    const div = document.createElement('div');
+    div.className = `mat-callout-2d${accentClass ? ` ${accentClass}` : ''}`;
+    div.textContent = text;
+    return new CSS2DObject(div);
+  }
+
+  const yTop = AFFIX_THICK / 2 + 0.02;
+  const yBase = AFFIX_THICK / 2 + 0.02;
+
+  const tsA = { x: -2.45, y: yTop, z: 2.05 };
+  const tsB = { x: -5.15, y: 0.88, z: 4.05 };
+  addLeader(topAffix, tsA.x, tsA.y, tsA.z, tsB.x, tsB.y, tsB.z);
+  addDot(topAffix, tsA.x, tsA.y, tsA.z, 0x3b9be5);
+  const tsL = makeLabel('Top sheet', 'mat-callout-2d--sheet');
+  tsL.position.set(tsB.x, tsB.y, tsB.z);
+  topAffix.add(tsL);
+
+  const pA = { x: 2.05, y: 0.3, z: 1.28 };
+  const pB = { x: 5.75, y: 0.72, z: 2.75 };
+  addLeader(coreGroup, pA.x, pA.y, pA.z, pB.x, pB.y, pB.z);
+  addDot(coreGroup, pA.x, pA.y, pA.z, 0xe5342a);
+  const pL = makeLabel('Pin matrix', 'mat-callout-2d--pins');
+  pL.position.set(pB.x, pB.y, pB.z);
+  coreGroup.add(pL);
+
+  const narrow =
+    typeof window !== 'undefined' &&
+    window.matchMedia &&
+    window.matchMedia('(max-width: 639px)').matches;
+  if (!narrow) {
+    const fA = { x: 1.25, y: yBase, z: 2.28 };
+    const fB = { x: 4.65, y: 0.2, z: 4.85 };
+    addLeader(bottomAffix, fA.x, fA.y, fA.z, fB.x, fB.y, fB.z);
+    addDot(bottomAffix, fA.x, fA.y, fA.z, 0xc5d0da);
+    const fL = makeLabel('Flex steel', 'mat-callout-2d--steel');
+    fL.position.set(fB.x, fB.y, fB.z);
+    bottomAffix.add(fL);
+  }
+
+  return labelRenderer;
+}
+
+function startScene(container, canvas, options = {}) {
+  const isSecondary = options.secondary === true;
+  const isAdjustMode = !isSecondary && new URLSearchParams(window.location.search).get('adjust') === '1';
 
   let { w: W, h: H } = readCanvasSize(container);
   if (W < 32 || H < 32) {
@@ -307,6 +396,7 @@ function startScene(container, canvas) {
   renderer.toneMappingExposure = 1.12;
 
   const scene = new THREE.Scene();
+  let labelRenderer = null;
 
   /*
    * Soft WebGL wash behind the mat only (grayscale). Mat / lights / materials unchanged.
@@ -720,7 +810,7 @@ function startScene(container, canvas) {
   hero3dRoot.add(matGroup);
 
   /* Dev: orbit to the angle you want, then run __magnamatScene.logDefaultAngle() in the console → paste into main.mjs */
-  if (typeof window !== 'undefined') {
+  if (typeof window !== 'undefined' && !isSecondary) {
     window.__magnamatScene = {
       camera,
       controls,
@@ -799,6 +889,18 @@ function startScene(container, canvas) {
       '[magnamat] Quick tune: ?adjust=1 panel — or CAM_* in main.mjs — or __magnamatScene.saveLockedView() / saveDefaultZoom() / copyLockedViewSnippet() / copyZoomLineSnippet()'
     );
     installViewTuner(container, { camera, controls, matGroup, isAdjustMode });
+  }
+
+  if (isSecondary) {
+    labelRenderer = installSecondaryMatCallouts({
+      container,
+      W,
+      H,
+      coreGroup,
+      topAffix,
+      bottomAffix,
+      AFFIX_THICK,
+    });
   }
 
   const fieldGroup = new THREE.Group();
@@ -912,6 +1014,7 @@ function startScene(container, canvas) {
 
     controls.update();
     renderer.render(scene, camera);
+    if (labelRenderer) labelRenderer.render(scene, camera);
   }
   animate();
 
@@ -928,6 +1031,7 @@ function startScene(container, canvas) {
     camera.updateProjectionMatrix();
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     renderer.setSize(w, h, true);
+    if (labelRenderer) labelRenderer.setSize(w, h);
   }
   function scheduleResize() {
     if (resizeRaf) return;
@@ -937,6 +1041,11 @@ function startScene(container, canvas) {
     });
   }
   window.addEventListener('resize', scheduleResize, { passive: true });
+
+  if (typeof ResizeObserver !== 'undefined') {
+    const ro = new ResizeObserver(() => scheduleResize());
+    ro.observe(container);
+  }
 }
 
 function bootMat() {
@@ -950,7 +1059,7 @@ function bootMat() {
     const { w, h } = readCanvasSize(container);
     if (w >= 32 && h >= 32) {
       try {
-        startScene(container, canvas);
+        startScene(container, canvas, {});
       } catch (err) {
         console.error(err);
         showCanvasError(container, '3D preview hit an error. Open the browser console for details.');
@@ -962,7 +1071,7 @@ function bootMat() {
       return;
     }
     try {
-      startScene(container, canvas);
+      startScene(container, canvas, {});
     } catch (err) {
       console.error(err);
       showCanvasError(container, '3D preview hit an error. Open the browser console for details.');
@@ -972,8 +1081,121 @@ function bootMat() {
   requestAnimationFrame(waitLayout);
 }
 
+function bootMatScroll() {
+  const container = document.getElementById('canvas-container-scroll');
+  const canvas = document.getElementById('mat-canvas-scroll');
+  if (!container || !canvas) return;
+
+  let frames = 0;
+  function waitLayout() {
+    frames++;
+    const { w, h } = readCanvasSize(container);
+    if (w >= 32 && h >= 32) {
+      try {
+        startScene(container, canvas, { secondary: true });
+      } catch (err) {
+        console.error(err);
+        showCanvasError(container, 'Secondary 3D preview failed. See console.');
+      }
+      return;
+    }
+    if (frames < 120) {
+      requestAnimationFrame(waitLayout);
+      return;
+    }
+    try {
+      startScene(container, canvas, { secondary: true });
+    } catch (err) {
+      console.error(err);
+      showCanvasError(container, 'Secondary 3D preview failed. See console.');
+    }
+  }
+
+  requestAnimationFrame(waitLayout);
+}
+
+function smoothstep01(t) {
+  const x = Math.max(0, Math.min(1, t));
+  return x * x * (3 - 2 * x);
+}
+
+/** Scroll through features headline slot → grow clip, fade second mat, ease three cards downward */
+function setupFeatures3dReveal() {
+  const bridge = document.getElementById('features-3d-reveal');
+  const inner = bridge?.querySelector('.features-3d-reveal__host');
+  const cards = document.querySelector('.js-features-cards-shift');
+  if (!bridge || !inner) return;
+
+  const reduceMotion =
+    typeof window !== 'undefined' &&
+    window.matchMedia &&
+    window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  let shown = 0;
+
+  /** Match bridge open distance to the fixed canvas box (hero-canvas-h clamp), not an arbitrary cap */
+  function bridgeRevealHeightPx() {
+    const box = document.getElementById('canvas-container-scroll');
+    if (!box) return 320;
+    const h = box.offsetHeight;
+    if (h >= 80) return Math.round(h);
+    const vh = window.innerHeight || 700;
+    return Math.round(Math.min(560, Math.max(220, vh * 0.38)));
+  }
+
+  function scrollTarget01() {
+    if (reduceMotion) return 0;
+    const vh = window.innerHeight || 1;
+    const top = bridge.getBoundingClientRect().top;
+    const navEl = document.querySelector('.site-nav');
+    const navH = navEl ? Math.ceil(navEl.getBoundingClientRect().height) : 66;
+    /* Fully open (1) when the slot reaches the top under the nav — not after it scrolls past */
+    const openTop = navH + 2;
+    const denom = Math.max(80, vh - openTop);
+    const u = (vh - top) / denom;
+    return smoothstep01(Math.max(0, Math.min(1, u)));
+  }
+
+  function tickBridge() {
+    requestAnimationFrame(tickBridge);
+    const target = scrollTarget01();
+    /* Slightly snappier so height/opacity track “fully open at top” without visible lag */
+    const ease = reduceMotion ? 1 : 0.14;
+    shown += (target - shown) * ease;
+    if (Math.abs(target - shown) < 0.00015) shown = target;
+
+    const hReveal = bridgeRevealHeightPx();
+    const h = shown * hReveal;
+    bridge.style.height = `${h}px`;
+
+    /* Fade in once the clip is tall enough to read the mat (not while squashed in first few px) */
+    const fadeStart = 0.18;
+    const opFade = smoothstep01(Math.max(0, (shown - fadeStart) / (1 - fadeStart)));
+
+    if (inner) {
+      inner.style.opacity = String(opFade);
+      inner.style.pointerEvents = opFade < 0.04 ? 'none' : 'auto';
+      inner.style.transform = `translate3d(0, ${(1 - opFade) * 12}px, 0)`;
+    }
+
+    const slidePx = 44;
+    if (cards) cards.style.transform = `translate3d(0, ${shown * slidePx}px, 0)`;
+  }
+
+  requestAnimationFrame(tickBridge);
+}
+
+function bootAllMat() {
+  bootMat();
+  /* Boot with hero-sized box even while clip height is 0 — reveal is overflow clip */
+  if (!window.matchMedia || !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    bootMatScroll();
+  }
+  setupFeatures3dReveal();
+}
+
 if (document.readyState === 'complete') {
-  requestAnimationFrame(bootMat);
+  requestAnimationFrame(bootAllMat);
 } else {
-  window.addEventListener('load', bootMat);
+  window.addEventListener('load', bootAllMat);
 }

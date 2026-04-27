@@ -131,23 +131,48 @@
 ═══════════════════════════ -->
 <section id="features" style="padding:110px 24px;background:var(--page-2);position:relative;overflow:hidden;">
 
-  <div style="position:absolute;top:20%;left:0;width:1px;height:280px;background:linear-gradient(to bottom,transparent,rgba(229,52,42,0.2),transparent);transform:rotate(20deg);transform-origin:top;pointer-events:none;"></div>
-  <div style="position:absolute;top:40%;right:0;width:1px;height:280px;background:linear-gradient(to bottom,transparent,rgba(0,0,0,0.18),transparent);transform:rotate(-20deg);transform-origin:top;pointer-events:none;"></div>
+  <div class="features-section__logo-bg" aria-hidden="true"></div>
 
-  <div style="max-width:1300px;margin:0 auto;">
+  <div style="position:absolute;top:20%;left:0;width:1px;height:280px;background:linear-gradient(to bottom,transparent,rgba(229,52,42,0.2),transparent);transform:rotate(20deg);transform-origin:top;pointer-events:none;z-index:1;"></div>
+  <div style="position:absolute;top:40%;right:0;width:1px;height:280px;background:linear-gradient(to bottom,transparent,rgba(0,0,0,0.18),transparent);transform:rotate(-20deg);transform-origin:top;pointer-events:none;z-index:1;"></div>
 
-    <div class="reveal" style="margin-bottom:70px;">
+  <div class="features-section__inner" style="max-width:1300px;margin:0 auto;">
+
+    <div class="reveal" style="margin-bottom:28px;">
       <p class="sec-label" style="margin-bottom:18px;">// 01 — Engineering</p>
-      <h2 class="font-display font-extrabold leading-none" style="font-size:clamp(2.8rem,6vw,5.5rem);color:var(--ink);">
+      <h2 class="display-headline font-display font-extrabold leading-none" style="color:var(--ink);">
         Built<br><span style="color:var(--blue);">different.</span>
       </h2>
     </div>
 
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+    <!-- Second 3D mat: lives between headline and the three cards; scroll-reveals in this slot -->
+    <div id="features-3d-reveal" class="features-3d-reveal w-full" aria-hidden="true">
+      <div class="features-3d-reveal__host">
+        <div id="canvas-container-scroll" class="hero-canvas-h features-3d-reveal__canvas features-3d-reveal__stage" style="position:relative;">
+          <canvas id="mat-canvas-scroll" aria-hidden="true" tabindex="-1"></canvas>
+          <div class="font-display font-medium" style="position:absolute;top:10px;left:10px;z-index:5;font-size:8px;color:var(--ink-faint);letter-spacing:0.12em;text-transform:uppercase;pointer-events:none;">mag·na·mat v1.0</div>
+          <div style="position:absolute;bottom:10px;right:10px;z-index:5;display:flex;align-items:center;gap:5px;opacity:0.5;pointer-events:none;color:var(--ink-soft);">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M5 9l-3 3 3 3M9 5l3-3 3 3M15 19l-3 3-3-3M19 9l3 3-3 3"/><line x1="12" y1="2" x2="12" y2="22"/><line x1="2" y1="12" x2="22" y2="12"/></svg>
+            <span style="font-family:'Space Mono',monospace;font-size:8px;letter-spacing:0.1em;">drag to orbit</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-5 js-features-cards-shift">
 
       <div class="f-card reveal">
-        <div style="width:50px;height:50px;border-radius:6px;background:rgba(229,52,42,0.08);border:1px solid rgba(229,52,42,0.22);display:flex;align-items:center;justify-content:center;margin-bottom:22px;">
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#E5342A" stroke-width="1.5"><circle cx="12" cy="12" r="3"/><line x1="12" y1="1" x2="12" y2="5"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="7.05" y2="7.05"/><line x1="16.95" y1="16.95" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="5" y2="12"/><line x1="19" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="7.05" y2="16.95"/><line x1="16.95" y1="7.05" x2="19.78" y2="4.22"/></svg>
+        <div class="f-card-icon f-card-icon--pins" aria-hidden="true">
+          <svg class="f-card-iso" viewBox="0 0 56 56" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <!-- Isometric build plate + vertical pins (Y-up extrusion) -->
+            <path d="M11 26 L28 37 L45 26 L28 15 Z" fill="rgba(22,22,22,0.12)" stroke="#1a1a1a" stroke-width="1.15" stroke-linejoin="round"/>
+            <path d="M11 26 L28 37 L28 48 L11 37 Z" fill="rgba(22,22,22,0.08)" stroke="#1a1a1a" stroke-width="1.05" stroke-linejoin="round"/>
+            <path d="M45 26 L28 37 L28 48 L45 37 Z" fill="rgba(22,22,22,0.05)" stroke="#1a1a1a" stroke-width="1.05" stroke-linejoin="round"/>
+            <g stroke="#1a1a1a" stroke-width="1.65" stroke-linecap="round">
+              <line x1="19" y1="24" x2="19" y2="15"/><line x1="25" y1="28" x2="25" y2="17"/><line x1="31" y1="24" x2="31" y2="15"/>
+              <line x1="22" y1="31" x2="22" y2="21"/><line x1="28" y1="33" x2="28" y2="20"/><line x1="34" y1="31" x2="34" y2="21"/>
+            </g>
+          </svg>
         </div>
         <h3 class="font-display font-semibold" style="font-size:1.6rem;margin-bottom:12px;color:var(--ink);">Micro-Pin Matrix</h3>
         <p style="color:var(--ink-muted);line-height:1.75;font-size:14px;margin-bottom:22px;">2,700+ individually tuned magnetic contact pins create a distributed grip field with zero dead zones. Perfect, even adhesion across the full build area — edge to edge.</p>
@@ -156,8 +181,13 @@
       </div>
 
       <div class="f-card reveal" style="transition-delay:0.12s;">
-        <div style="width:50px;height:50px;border-radius:6px;background:rgba(0,0,0,0.05);border:1px solid rgba(0,0,0,0.12);display:flex;align-items:center;justify-content:center;margin-bottom:22px;">
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#3B9BE5" stroke-width="1.5"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+        <div class="f-card-icon f-card-icon--flex" aria-hidden="true">
+          <svg class="f-card-iso" viewBox="0 0 56 56" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <!-- Isometric flex stack: three offset slabs -->
+            <path d="M9 32 L28 44 L47 32 L28 20 Z" fill="rgba(22,22,22,0.05)" stroke="#1a1a1a" stroke-width="1" stroke-linejoin="round"/>
+            <path d="M11 26 L30 38 L49 26 L30 14 Z" fill="rgba(22,22,22,0.09)" stroke="#1a1a1a" stroke-width="1.05" stroke-linejoin="round"/>
+            <path d="M13 20 L32 32 L51 20 L32 8 Z" fill="rgba(22,22,22,0.14)" stroke="#1a1a1a" stroke-width="1.1" stroke-linejoin="round"/>
+          </svg>
         </div>
         <h3 class="font-display font-semibold" style="font-size:1.6rem;margin-bottom:12px;color:var(--ink);">Flex-Release Tech</h3>
         <p style="color:var(--ink-muted);line-height:1.75;font-size:14px;margin-bottom:22px;">A precision-flex spring steel core lets you pop parts with a single bow. No tools, no scraping, no warped prints. The mat snaps back to perfectly flat in under 0.1 seconds.</p>
@@ -178,8 +208,14 @@
       </div>
 
       <div class="f-card reveal" style="transition-delay:0.24s;">
-        <div style="width:50px;height:50px;border-radius:6px;background:rgba(22,22,22,0.04);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;margin-bottom:22px;">
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#475569" stroke-width="1.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 12 11 14 15 10"/></svg>
+        <div class="f-card-icon f-card-icon--material" aria-hidden="true">
+          <svg class="f-card-iso" viewBox="0 0 56 56" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <!-- Isometric sealed unit + verified face -->
+            <path d="M12 26 L28 36 L44 26 L28 16 Z" fill="rgba(22,22,22,0.07)" stroke="#1a1a1a" stroke-width="1.1" stroke-linejoin="round"/>
+            <path d="M12 26 L28 36 L28 46 L12 36 Z" fill="rgba(22,22,22,0.11)" stroke="#1a1a1a" stroke-width="1.05" stroke-linejoin="round"/>
+            <path d="M44 26 L28 36 L28 46 L44 36 Z" fill="rgba(22,22,22,0.05)" stroke="#1a1a1a" stroke-width="1.05" stroke-linejoin="round"/>
+            <path d="M32 28 L34 32 L40 24" stroke="#1a1a1a" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
         </div>
         <h3 class="font-display font-semibold" style="font-size:1.6rem;margin-bottom:12px;color:var(--ink);">Material Agnostic</h3>
         <p style="color:var(--ink-muted);line-height:1.75;font-size:14px;margin-bottom:22px;">Tested to 255°C sustained bed temperature with zero degradation over 1,000+ print cycles. Handles every common filament without surface treatment or adhesion aids.</p>
@@ -206,7 +242,7 @@
 
       <div class="reveal">
         <p class="sec-label" style="margin-bottom:18px;">// 02 — Technical</p>
-        <h2 class="font-display font-extrabold leading-none" style="font-size:clamp(2.8rem,5.5vw,5rem);margin-bottom:36px;color:var(--ink);">
+        <h2 class="display-headline font-display font-extrabold leading-none" style="margin-bottom:36px;color:var(--ink);">
           Spec<br><span style="color:var(--red);">Sheet.</span>
         </h2>
 
