@@ -1,6 +1,10 @@
 /** @type {import('tailwindcss').Config} */
 module.exports = {
-  content: ['./index.html'],
+  content: [
+    './app/**/*.{js,ts,jsx,tsx,mdx}',
+    './app/(marketing)/**/*.{js,ts,jsx,tsx,mdx}',
+    './components/**/*.{js,ts,jsx,tsx,mdx}',
+  ],
   theme: {
     extend: {
       colors: {
@@ -10,9 +14,9 @@ module.exports = {
         paper: '#fafaf8',
       },
       fontFamily: {
-        display: ['Orbitron', 'sans-serif'],
-        body: ['Barlow', 'sans-serif'],
-        mono: ['"Space Mono"', 'monospace'],
+        display: ['var(--font-orbitron)', 'sans-serif'],
+        body: ['var(--font-barlow)', 'sans-serif'],
+        mono: ['var(--font-space-mono)', 'monospace'],
       },
     },
   },

@@ -1,0 +1,49 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+/// For Neon: use a pooled `DATABASE_URL` at runtime; run `prisma migrate` with a direct
+/// (non-`-pooler`) URL (swap env temporarily or add `directUrl` + `DIRECT_URL` per Prisma docs).
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+/// Singleton `id: "default"` — nav / CTA JSON, validated in `lib/cms/chrome-json.ts`.
+model SiteChrome {
+  id         String   @id @default("default")
+  configJson String
+  updatedAt  DateTime @updatedAt
+}
+
+/// Singleton `id: "default"` — toggles and short status strings for the shell.
+model SiteSettings {
+  id                 String   @id @default("default")
+  availabilityStatus String   @default("")
+  navHideOnScroll    Boolean  @default(false)
+  updatedAt          DateTime @updatedAt
+}
+
+/// Singleton `id: "default"` — document title/description + staging `noindex`.
+model SeoSettings {
+  id          String   @id @default("default")
+  title       String
+  description String
+  /// When true, marketing HTML emits `noindex` (preview/staging).
+  noIndex     Boolean  @default(false)
+  updatedAt   DateTime @updatedAt
+}
+
+/// Singleton `id: "home"` — page-scoped marketing JSON (`MarketingPageContent`).
+model MarketingPage {
+  id          String   @id @default("home")
+  contentJson String
+  updatedAt   DateTime @updatedAt
+}
+
+/// Singleton `id: "default"` — hero `#mat-canvas` orbit + mat rotation (`HeroSceneCameraConfig`).
+model HeroSceneCamera {
+  id         String   @id @default("default")
+  configJson String
+  updatedAt  DateTime @updatedAt
+}

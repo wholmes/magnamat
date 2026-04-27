@@ -40,7 +40,7 @@ html {
 body {
   background: var(--page);
   color: var(--ink);
-  font-family: 'Barlow', sans-serif;
+  font-family: var(--font-barlow), sans-serif;
   overflow-x: hidden;
 }
 
@@ -52,7 +52,7 @@ body {
   z-index: 10000;
   padding: 10px 16px;
   margin: 6px;
-  font-family: 'Space Mono', monospace;
+  font-family: var(--font-space-mono), monospace;
   font-size: 11px;
   letter-spacing: 0.08em;
   text-transform: uppercase;
@@ -139,7 +139,7 @@ body::after {
 
 /* Buttons */
 .btn {
-  font-family: 'Barlow Condensed', sans-serif;
+  font-family: var(--font-barlow-condensed), sans-serif;
   font-weight: 700; letter-spacing: 0.08em;
   text-transform: uppercase; cursor: pointer;
   transition: all 0.25s; border: none; display: inline-block;
@@ -177,7 +177,7 @@ body::after {
   inset: -6% -14% -10% -14%;
   z-index: 0;
   pointer-events: none;
-  background-image: url('../images/logo-transparent.svg');
+  background-image: url('/images/logo-transparent.svg');
   background-repeat: no-repeat;
   background-position: 50% 42%;
   background-size: min(960px, 92vw) auto;
@@ -218,7 +218,7 @@ body::after {
 
 /* CSS2D labels on secondary mat (Three.js) */
 .mat-callout-2d {
-  font-family: 'Space Mono', monospace;
+  font-family: var(--font-space-mono), monospace;
   font-size: clamp(7px, 1vw, 9px);
   font-weight: 700;
   letter-spacing: 0.12em;
@@ -296,7 +296,7 @@ body::after {
   inset: 0;
   z-index: 0;
   pointer-events: none;
-  background-image: url('../images/hero-product-pinfield.png');
+  background-image: url('/images/hero-product-pinfield.png');
   background-repeat: no-repeat;
 }
 @media (max-width: 639px) {
@@ -542,6 +542,47 @@ body::after {
   -webkit-overflow-scrolling: touch;
 }
 
+/* Hero shell width + padding — mirrors prior Tailwind max-width / responsive padding */
+.hero-main-inner {
+  width: 100%;
+  max-width: 1300px;
+  margin-left: auto;
+  margin-right: auto;
+  padding: 24px 16px 32px;
+  box-sizing: border-box;
+}
+@media (min-width: 640px) {
+  .hero-main-inner {
+    padding: 32px 24px 40px;
+  }
+}
+@media (min-width: 1024px) {
+  .hero-main-inner {
+    padding: 48px 24px;
+  }
+}
+
+/* Two-column hero at lg — plain CSS so copy + product do not stack when utilities fail */
+.hero-layout-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 2rem;
+  align-items: start;
+}
+@media (min-width: 1024px) {
+  .hero-layout-grid {
+    grid-template-columns: 1fr 1fr;
+    align-items: center;
+  }
+}
+.hero-layout-grid > * {
+  min-width: 0;
+}
+
+.hero-stats-flex {
+  display: flex;
+}
+
 /* Mask runs on inner block so flex + min-height quirks don’t skip the first paint */
 .hero-above-fold__reveal {
   transform: translateZ(0);
@@ -550,7 +591,7 @@ body::after {
   animation: hero-mask-reveal 0.72s cubic-bezier(0.22, 1, 0.36, 1) 0.14s both;
 }
 
-/* Full-bleed ticker: bottom grid row = always visible at foot of first viewport */
+/* Full-bleed ticker: bottom grid row, flush horizontal strip */
 .hero-marquee {
   position: relative;
   z-index: 2;
@@ -561,6 +602,7 @@ body::after {
     max(14px, env(safe-area-inset-right, 0px));
   overflow: hidden;
   background: #0a0a0a;
+  box-sizing: border-box;
 }
 
 /* Pin texture — still reads as “mat surface” on light UI */
@@ -591,7 +633,7 @@ body::after {
 
 /* Section label */
 .sec-label {
-  font-family: 'Space Mono', monospace;
+  font-family: var(--font-space-mono), monospace;
   font-size: 11px; letter-spacing: 0.2em;
   text-transform: uppercase; color: var(--red);
 }
@@ -653,7 +695,7 @@ body::after {
 
 /* Stats number */
 .stat-num {
-  font-family: 'Orbitron', sans-serif;
+  font-family: var(--font-orbitron), sans-serif;
   font-weight: 800;
   line-height: 1;
   color: var(--ink);
@@ -697,6 +739,19 @@ body::after {
   align-items: center;
   justify-content: space-between;
   gap: 1rem;
+}
+
+/* Center nav cluster — plain CSS so layout holds if Tailwind utilities are absent */
+.site-nav__links {
+  display: none;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 28px;
+}
+@media (min-width: 768px) {
+  .site-nav__links {
+    display: flex;
+  }
 }
 
 .site-nav .btn-primary {
@@ -748,7 +803,7 @@ body::after {
   display: flex;
   align-items: center;
   justify-content: center;
-  font-family: 'Space Mono', monospace;
+  font-family: var(--font-space-mono), monospace;
   font-size: 9px;
   font-weight: 700;
   color: #fff;
@@ -846,7 +901,7 @@ body::after {
   align-items: flex-start;
 }
 .cart-drawer__line-name {
-  font-family: 'Barlow', sans-serif;
+  font-family: var(--font-barlow), sans-serif;
   font-weight: 600;
   font-size: 16px;
   color: var(--ink);
@@ -863,7 +918,7 @@ body::after {
 }
 .cart-drawer__line-price {
   display: block;
-  font-family: 'Space Mono', monospace;
+  font-family: var(--font-space-mono), monospace;
   font-size: 12px;
   color: var(--ink-muted);
   margin-bottom: 8px;
@@ -893,7 +948,7 @@ body::after {
 .cart-drawer__qty-val {
   min-width: 28px;
   text-align: center;
-  font-family: 'Space Mono', monospace;
+  font-family: var(--font-space-mono), monospace;
   font-size: 12px;
   font-weight: 700;
 }
@@ -902,7 +957,7 @@ body::after {
   padding: 0;
   border: none;
   background: none;
-  font-family: 'Space Mono', monospace;
+  font-family: var(--font-space-mono), monospace;
   font-size: 10px;
   letter-spacing: 0.1em;
   text-transform: uppercase;
@@ -927,7 +982,7 @@ body::after {
   margin-bottom: 6px;
 }
 .cart-drawer__sub-label {
-  font-family: 'Space Mono', monospace;
+  font-family: var(--font-space-mono), monospace;
   font-size: 10px;
   letter-spacing: 0.12em;
   text-transform: uppercase;
@@ -974,7 +1029,7 @@ body::after {
   text-transform: uppercase;
   color: var(--ink-soft);
   text-decoration: none;
-  font-family: 'Space Mono', monospace;
+  font-family: var(--font-space-mono), monospace;
   transition: color 0.2s;
 }
 .nav-link:hover {

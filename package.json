@@ -2,10 +2,48 @@
   "name": "magnamat",
   "private": true,
   "scripts": {
+    "clean": "rm -rf .next node_modules/.cache",
+    "dev": "next dev",
+    "build": "prisma generate && next build",
+    "start": "next start",
+    "lint": "next lint",
+    "postinstall": "prisma generate",
+    "db:up": "docker compose up -d --wait",
+    "db:down": "docker compose down",
+    "db:migrate:dev": "prisma migrate dev",
+    "db:migrate:deploy": "prisma migrate deploy",
+    "db:ensure-core-tables": "prisma db execute --schema prisma/schema.prisma --file prisma/sql/ensure_core_cms_tables.sql",
+    "db:fix-seo-noindex": "prisma db execute --schema prisma/schema.prisma --file prisma/sql/add_seo_noindex.sql",
+    "db:fix-hero-scene-camera": "prisma db execute --schema prisma/schema.prisma --file prisma/sql/ensure_core_cms_tables.sql",
+    "db:bootstrap-db": "npm run db:ensure-core-tables && npm run db:fix-seo-noindex && npm run db:seed",
+    "db:migrate:deploy:local": "dotenv -e .env.docker -- prisma migrate deploy",
+    "db:seed": "prisma db seed",
+    "db:seed:local": "dotenv -e .env.docker -- prisma db seed",
+    "db:push": "prisma db push",
     "build:css": "tailwindcss -i ./css/tailwind-input.css -o ./css/tailwind.css --minify",
     "serve": "npx --yes serve . -s -l 8766"
   },
+  "prisma": {
+    "seed": "node prisma/seed.mjs"
+  },
   "devDependencies": {
+    "dotenv-cli": "^8.0.0",
     "tailwindcss": "^3.4.17"
+  },
+  "dependencies": {
+    "@prisma/client": "^6.19.3",
+    "@types/node": "^22.19.17",
+    "@types/react": "^19.2.14",
+    "@types/react-dom": "^19.2.3",
+    "autoprefixer": "^10.5.0",
+    "eslint": "^9.39.4",
+    "eslint-config-next": "^15.5.15",
+    "next": "^15.5.15",
+    "postcss": "^8.5.12",
+    "prisma": "^6.19.3",
+    "react": "^19.2.5",
+    "react-dom": "^19.2.5",
+    "three": "^0.160.0",
+    "typescript": "^5.9.3"
   }
 }

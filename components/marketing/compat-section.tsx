@@ -1,0 +1,90 @@
+import type { CompatContent } from '@/lib/cms/marketing-content';
+import { normalizeMultiline } from '@/lib/cms/marketing-content';
+
+import { HeadlineFromSegments } from './headline-from-segments';
+
+type Props = { compat: CompatContent };
+
+export function CompatSection({ compat: c }: Props) {
+  return (
+    <section
+      id="compat"
+      style={{
+        padding: '110px 24px',
+        background: 'var(--card)',
+        textAlign: 'center',
+        position: 'relative',
+        overflow: 'hidden',
+      }}
+    >
+      <div className="compat-rings" aria-hidden>
+        <div className="ring" style={{ width: 700, height: 700, borderWidth: 1, borderColor: 'rgba(0,0,0,0.055)' }} />
+        <div className="ring" style={{ width: 530, height: 530, borderWidth: 1, borderColor: 'rgba(0,0,0,0.07)' }} />
+        <div className="ring" style={{ width: 370, height: 370, borderWidth: 1, borderColor: 'rgba(229,52,42,0.08)' }} />
+        <div className="ring" style={{ width: 220, height: 220, borderWidth: 1, borderColor: 'rgba(229,52,42,0.095)' }} />
+        <div className="ring" style={{ width: 100, height: 100, borderWidth: 1, borderColor: 'rgba(229,52,42,0.11)' }} />
+        <div className="compat-rings__burst" />
+      </div>
+
+      <div style={{ maxWidth: 780, margin: '0 auto', position: 'relative', zIndex: 1 }}>
+        <div className="reveal">
+          <p className="sec-label" style={{ marginBottom: 18 }}>
+            {c.sectionLabel}
+          </p>
+          <HeadlineFromSegments
+            segments={c.headlineSegments}
+            className="font-display font-extrabold leading-none"
+            style={{ fontSize: 'clamp(2.8rem,6vw,5.5rem)', marginBottom: 26, color: 'var(--ink)' }}
+          />
+          <p style={{ color: 'var(--ink-muted)', fontSize: 16, lineHeight: 1.75, maxWidth: 480, margin: '0 auto 44px' }}>
+            {normalizeMultiline(c.body)}
+          </p>
+        </div>
+
+        <div
+          className="reveal"
+          style={{
+            display: 'flex',
+            flexWrap: 'wrap',
+            justifyContent: 'center',
+            gap: 12,
+            marginBottom: 52,
+            transitionDelay: '0.15s',
+          }}
+        >
+          {c.badges.map((b, i) => (
+            <div key={`${b.label}-${i}`} className="compat-badge">
+              {b.status === 'check' ? (
+                <span style={{ color: 'var(--blue)', fontSize: 18, fontWeight: 700 }}>✓</span>
+              ) : (
+                <span style={{ color: 'var(--ink-faint)', fontSize: 18 }}>○</span>
+              )}
+              <span
+                style={{
+                  fontFamily: 'var(--font-space-mono), monospace',
+                  fontSize: 12,
+                  color: b.status === 'check' ? 'var(--ink-muted)' : 'var(--ink-faint)',
+                  letterSpacing: '0.08em',
+                }}
+              >
+                {b.label}
+              </span>
+            </div>
+          ))}
+        </div>
+
+        <div className="reveal" style={{ transitionDelay: '0.3s' }}>
+          <button
+            type="button"
+            className="btn btn-primary js-add-to-cart"
+            data-product-id="magnamat-v1"
+            style={{ fontSize: 17, padding: '18px 52px' }}
+            aria-label={c.ctaAriaLabel}
+          >
+            {c.ctaText}
+          </button>
+        </div>
+      </div>
+    </section>
+  );
+}

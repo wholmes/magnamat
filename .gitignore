@@ -1,2 +1,11 @@
 node_modules/
 .venv-trace/
+.next/
+.env
+.env.docker
+.env*.local
+*.db
+*.db-journal
+
+# Local desktop screenshots (do not commit)
+Screenshot*.png
