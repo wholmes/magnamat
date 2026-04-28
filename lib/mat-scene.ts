@@ -458,8 +458,11 @@ function startScene(container, canvas, options = {}) {
         vec3 col = mix(hi, mid, h * 0.55 + drift);
         col = mix(col, lo, (1.0 - h) * 0.22);
         col = clamp(col, 0.0, 1.0);
-        /* Higher alpha so this layer reads as B&W, not a tint of the HTML behind */
-        float washAlpha = 0.62 + h * 0.2;
+        /*
+         * Moderate alpha so the HTML hero photo (Eufy plate) stays visible through the canvas.
+         * Higher values read as an opaque gray plane over the reference image behind WebGL.
+         */
+        float washAlpha = 0.2 + h * 0.12;
         gl_FragColor = vec4(col, washAlpha);
       }
     `,

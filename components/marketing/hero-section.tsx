@@ -1,3 +1,4 @@
+import Image from 'next/image';
 import Link from 'next/link';
 
 import type { HeroContent } from '@/lib/cms/marketing-content';
@@ -145,7 +146,16 @@ export function HeroSection({ hero }: Props) {
 
             <div className="hero-product-col">
               <div id="canvas-container" className="hero-canvas-h hero-product-stage" style={{ position: 'relative' }}>
-                <div className="hero-product-photo" aria-hidden />
+                <div className="hero-product-photo" aria-hidden>
+                  <Image
+                    src="/images/hero-product-pinfield.png"
+                    alt=""
+                    fill
+                    priority
+                    sizes="(max-width:639px) 100vw, (max-width:1023px) 92vw, min(820px, 118vw)"
+                    className="hero-product-photo__img"
+                  />
+                </div>
                 <canvas
                   id="mat-canvas"
                   role="img"

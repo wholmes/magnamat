@@ -290,14 +290,16 @@ body::after {
   /* Let the photo bleed past the canvas box; avoid clipping the art */
   overflow: visible;
 }
-/* Plate fills the stage (same box as canvas). Side bleed was clipped by body overflow-x: hidden. */
+/* Plate fills the stage (same box as canvas). Real <img> (see HeroSection) — avoids CSS mask/background quirks and odd WebKit composite edge cases vs WebGL. */
 .hero-product-photo {
   position: absolute;
   inset: 0;
   z-index: 0;
   pointer-events: none;
-  background-image: url('/images/hero-product-pinfield.png');
-  background-repeat: no-repeat;
+  overflow: hidden;
+}
+.hero-product-photo__img {
+  object-fit: cover;
 }
 @media (max-width: 639px) {
   .hero-stack-copy {
@@ -321,48 +323,23 @@ body::after {
    * Mobile plate: fill the stage (no dead band), anchor the machine low so the mat can sit
    * over its lower half. Tweak background-position % / heroMatWorldYOffset in main.mjs together.
    */
-  .hero-product-col .hero-product-photo {
-    background-size: cover;
-    background-position: center 58%;
+  .hero-product-col .hero-product-photo__img {
+    object-position: center 58%;
   }
 }
 /* Tablet / small desktop: show full left edge of machine inside the stage */
 @media (min-width: 640px) and (max-width: 1023px) {
-  .hero-product-col .hero-product-photo {
-    background-size: min(122%, 92vw) auto;
-    background-position: 6% 50%;
+  .hero-product-col .hero-product-photo__img {
+    object-fit: cover;
+    object-position: 6% 50%;
   }
 }
-/* Desktop lg: Eufy plate — fade right edge into the page (same stops as old SVG mask). */
-/* Use CSS gradients, not data: SVG masks: WebKit often fails fragment + filter refs and hides the whole photo. */
+
+/* Desktop: anchor machine left; no CSS mask on the plate — masks hid it on WebKit */
 @media (min-width: 1024px) {
-  .hero-product-col .hero-product-photo {
-    background-size: min(118%, 820px) auto;
-    background-position: 0% 50%;
-    -webkit-mask-image: linear-gradient(
-      to right,
-      rgba(255, 255, 255, 1) 0%,
-      rgba(255, 255, 255, 1) 72%,
-      rgba(255, 255, 255, 0.55) 82%,
-      rgba(255, 255, 255, 0.14) 92%,
-      rgba(255, 255, 255, 0) 100%
-    );
-    mask-image: linear-gradient(
-      to right,
-      rgba(255, 255, 255, 1) 0%,
-      rgba(255, 255, 255, 1) 72%,
-      rgba(255, 255, 255, 0.55) 82%,
-      rgba(255, 255, 255, 0.14) 92%,
-      rgba(255, 255, 255, 0) 100%
-    );
-    -webkit-mask-repeat: no-repeat;
-    mask-repeat: no-repeat;
-    -webkit-mask-size: 100% 100%;
-    mask-size: 100% 100%;
-    -webkit-mask-position: center;
-    mask-position: center;
-    -webkit-mask-type: alpha;
-    mask-type: alpha;
+  .hero-product-col .hero-product-photo__img {
+    object-fit: contain;
+    object-position: 0 50%;
   }
 }
 .hero-product-col .hero-product-stage {
