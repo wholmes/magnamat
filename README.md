@@ -238,6 +238,7 @@ There is no third-party CMS product — only this repo’s Prisma models + admin
 - **Framework:** Next.js App Router. Repo **`vercel.json`** pins **`framework: "nextjs"`**, **`buildCommand`**: `prisma generate && next build`, **`installCommand`**: `npm install`, and clears a bad dashboard override with **`outputDirectory": null`**. Set **`DATABASE_URL`** (and CMS secrets if you use admin) in the Vercel project environment.
 - **Clean URLs** for `/features`, `/specs`, `/compat` are handled in **`middleware.ts`** (rewrite to `/`); do not point legacy **`vercel.json` rewrites** at a non-existent **`/index.html`** (that caused platform **`NOT_FOUND`** before this setup).
 - **Project settings:** root directory **`.`**, framework **Next.js**, leave **Output directory** empty unless you know you need an override (wrong output dir can serve an empty tree and 404 everything).
+- **Node version:** `package.json` **`engines.node`** (`>=20.9.0`) is honored by many hosts (including Vercel) so production builds use a compatible Node release unless you override it in the project dashboard.
 
 ---
 
@@ -254,6 +255,8 @@ npm run dev
 ```
 
 **Stale `.next` / missing chunk errors** (e.g. `Cannot find module './124.js'`): stop all dev and start processes, then run **`npm run clean`** and **`npm run build`** (or **`npm run dev:fresh`** to clean and start dev). Avoid running **`next dev`** and **`next build`** against the same `.next` folder at the same time.
+
+**Node.js version (`package.json` → `engines`):** The repo sets **`"engines": { "node": ">=20.9.0" }`** — that is npm’s way of declaring the **supported Node.js runtime** (not WebGL or any other “engine”). It nudges local tooling and platforms such as **Vercel** toward **Node 20.9+**, which matches **Next.js 15** expectations. If your machine is older, upgrade Node (e.g. `nvm`, Volta, or your OS installer); `npm install` may warn when the range is not satisfied.
 
 For a quick throwaway DB without migration history you can still use `npx prisma db push`, but production-style deploys should use **`db:migrate:deploy`**.
 
