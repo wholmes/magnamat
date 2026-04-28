@@ -52,7 +52,11 @@ function filamentTagStyle(label: string): CSSProperties {
 export function FeaturesSection({ features }: Props) {
   const f = features;
   return (
-    <section id="features" style={{ padding: '110px 24px', background: 'var(--page-2)', position: 'relative', overflow: 'hidden' }}>
+    <section
+      id="features"
+      className="bg-grid"
+      style={{ padding: '110px 24px', backgroundColor: 'var(--page-2)', position: 'relative', overflow: 'hidden' }}
+    >
       <div className="features-section__logo-bg" aria-hidden />
 
       <div

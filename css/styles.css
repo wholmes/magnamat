@@ -97,6 +97,9 @@ a.btn-outline:focus-visible {
   .btn-outline:hover { transform: none; }
   .skip-link { transition: none; }
   .js-features-cards-shift { will-change: auto; }
+  body::after {
+    opacity: 0.018;
+  }
   .hero-above-fold__reveal {
     animation: none !important;
     clip-path: none !important;
@@ -105,15 +108,19 @@ a.btn-outline:focus-visible {
   }
 }
 
-/* Subtle paper grain */
+/*
+ * Viewport-wide film grain (2D) — multiply so it reads as material depth, not a gray veil.
+ * z-index below fixed nav (100) / dialogs so chrome stays clean; still above in-flow hero (z≈1).
+ */
 body::after {
   content: '';
   position: fixed;
   inset: 0;
-  opacity: 0.035;
+  opacity: 0.052;
   pointer-events: none;
-  z-index: 9999;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='250' height='250'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='250' height='250' filter='url(%23n)'/%3E%3C/svg%3E");
+  z-index: 60;
+  mix-blend-mode: multiply;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='256' height='256'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.92' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='256' height='256' filter='url(%23n)'/%3E%3C/svg%3E");
 }
 
 ::-webkit-scrollbar { width: 3px; }
@@ -429,7 +436,10 @@ body::after {
   position: relative;
   overflow: visible;
   transition: transform 0.3s, border-color 0.3s, box-shadow 0.3s;
-  box-shadow: 0 1px 3px rgba(22, 22, 22, 0.04);
+  box-shadow:
+    0 1px 3px rgba(22, 22, 22, 0.045),
+    inset 0 1px 0 rgba(255, 255, 255, 0.88),
+    inset 0 -18px 36px -20px rgba(22, 22, 22, 0.04);
 }
 .f-card::after {
   content: '';
@@ -444,7 +454,10 @@ body::after {
 .f-card:hover {
   transform: translateY(-4px);
   border-color: var(--border-strong);
-  box-shadow: 0 12px 40px rgba(22, 22, 22, 0.08);
+  box-shadow:
+    0 12px 40px rgba(22, 22, 22, 0.09),
+    inset 0 1px 0 rgba(255, 255, 255, 0.92),
+    inset 0 -22px 44px -22px rgba(22, 22, 22, 0.045);
 }
 .f-card:hover::after { transform: scaleX(1); }
 
@@ -452,13 +465,16 @@ body::after {
 .reveal { opacity: 0; transform: translateY(28px); transition: opacity 0.7s ease, transform 0.7s ease; }
 .revealed { opacity: 1; transform: none; }
 
-/* BG grid */
+/* BG grid — cool sheet + specular lift + hairline grid (2D depth without noise on type) */
 .bg-grid {
   background-color: var(--page);
   background-image:
+    radial-gradient(ellipse 95% 70% at 50% -18%, rgba(255, 255, 255, 0.38), transparent 52%),
     linear-gradient(rgba(22, 22, 22, 0.04) 1px, transparent 1px),
     linear-gradient(90deg, rgba(22, 22, 22, 0.04) 1px, transparent 1px);
-  background-size: 52px 52px;
+  background-size: 100% 100%, 52px 52px, 52px 52px;
+  background-repeat: no-repeat, repeat, repeat;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.55);
 }
 
 /* Hero: color + depth up top, resolves to clean white toward the bottom */
@@ -482,6 +498,7 @@ body::after {
     linear-gradient(rgba(22, 22, 22, 0.038) 1px, transparent 1px),
     linear-gradient(90deg, rgba(22, 22, 22, 0.038) 1px, transparent 1px);
   background-size: auto, auto, auto, auto, 48px 48px, 48px 48px;
+  background-repeat: no-repeat, no-repeat, no-repeat, no-repeat, repeat, repeat;
   background-attachment: fixed, scroll, scroll, scroll, scroll, scroll;
 }
 
@@ -623,7 +640,9 @@ body::after {
   padding: 12px 22px;
   display: inline-flex; align-items: center; gap: 10px;
   transition: all 0.3s;
-  box-shadow: 0 1px 2px rgba(22, 22, 22, 0.04);
+  box-shadow:
+    0 1px 2px rgba(22, 22, 22, 0.04),
+    inset 0 1px 0 rgba(255, 255, 255, 0.82);
 }
 .compat-badge:hover { border-color: rgba(59, 155, 229, 0.45); background: rgba(59, 155, 229, 0.06); }
 

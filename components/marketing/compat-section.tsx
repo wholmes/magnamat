@@ -9,9 +9,10 @@ export function CompatSection({ compat: c }: Props) {
   return (
     <section
       id="compat"
+      className="bg-grid"
       style={{
         padding: '110px 24px',
-        background: 'var(--card)',
+        backgroundColor: 'var(--card)',
         textAlign: 'center',
         position: 'relative',
         overflow: 'hidden',

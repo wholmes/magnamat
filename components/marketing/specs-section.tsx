@@ -7,7 +7,7 @@ type Props = { specs: SpecsContent };
 
 export function SpecsSection({ specs: s }: Props) {
   return (
-    <section id="specs" style={{ padding: '110px 24px', background: 'var(--page)' }}>
+    <section id="specs" className="bg-grid" style={{ padding: '110px 24px', backgroundColor: 'var(--page)' }}>
       <div style={{ maxWidth: 1300, margin: '0 auto' }}>
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-start">
           <div className="reveal">
