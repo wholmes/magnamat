@@ -333,15 +333,34 @@ body::after {
     background-position: 6% 50%;
   }
 }
-/* Desktop lg: Eufy plate only - alpha ramp + blurred mask edge (cleaner than gray luminance) */
+/* Desktop lg: Eufy plate — fade right edge into the page (same stops as old SVG mask). */
+/* Use CSS gradients, not data: SVG masks: WebKit often fails fragment + filter refs and hides the whole photo. */
 @media (min-width: 1024px) {
   .hero-product-col .hero-product-photo {
     background-size: min(118%, 820px) auto;
     background-position: 0% 50%;
-    -webkit-mask: url("data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Cdefs%3E%3ClinearGradient%20id%3D%22g%22%20gradientUnits%3D%22objectBoundingBox%22%20x1%3D%220%22%20y1%3D%220%22%20x2%3D%221%22%20y2%3D%220%22%3E%3Cstop%20offset%3D%220%25%22%20stop-color%3D%22white%22%20stop-opacity%3D%221%22%2F%3E%3Cstop%20offset%3D%2272%25%22%20stop-color%3D%22white%22%20stop-opacity%3D%221%22%2F%3E%3Cstop%20offset%3D%2282%25%22%20stop-color%3D%22white%22%20stop-opacity%3D%220.55%22%2F%3E%3Cstop%20offset%3D%2292%25%22%20stop-color%3D%22white%22%20stop-opacity%3D%220.14%22%2F%3E%3Cstop%20offset%3D%22100%25%22%20stop-color%3D%22white%22%20stop-opacity%3D%220%22%2F%3E%3C%2FlinearGradient%3E%3Cfilter%20id%3D%22f%22%20x%3D%22-0.08%22%20y%3D%22-0.08%22%20width%3D%221.16%22%20height%3D%221.16%22%20filterUnits%3D%22objectBoundingBox%22%3E%3CfeGaussianBlur%20in%3D%22SourceGraphic%22%20stdDeviation%3D%220.026%22%2F%3E%3C%2Ffilter%3E%3C%2Fdefs%3E%3Cmask%20id%3D%22m%22%20maskUnits%3D%22objectBoundingBox%22%20maskContentUnits%3D%22objectBoundingBox%22%3E%3Crect%20width%3D%221%22%20height%3D%221%22%20fill%3D%22url(%23g)%22%20filter%3D%22url(%23f)%22%2F%3E%3C%2Fmask%3E%3C%2Fsvg%3E#m")
-      no-repeat center / 100% 100%;
-    mask: url("data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Cdefs%3E%3ClinearGradient%20id%3D%22g%22%20gradientUnits%3D%22objectBoundingBox%22%20x1%3D%220%22%20y1%3D%220%22%20x2%3D%221%22%20y2%3D%220%22%3E%3Cstop%20offset%3D%220%25%22%20stop-color%3D%22white%22%20stop-opacity%3D%221%22%2F%3E%3Cstop%20offset%3D%2272%25%22%20stop-color%3D%22white%22%20stop-opacity%3D%221%22%2F%3E%3Cstop%20offset%3D%2282%25%22%20stop-color%3D%22white%22%20stop-opacity%3D%220.55%22%2F%3E%3Cstop%20offset%3D%2292%25%22%20stop-color%3D%22white%22%20stop-opacity%3D%220.14%22%2F%3E%3Cstop%20offset%3D%22100%25%22%20stop-color%3D%22white%22%20stop-opacity%3D%220%22%2F%3E%3C%2FlinearGradient%3E%3Cfilter%20id%3D%22f%22%20x%3D%22-0.08%22%20y%3D%22-0.08%22%20width%3D%221.16%22%20height%3D%221.16%22%20filterUnits%3D%22objectBoundingBox%22%3E%3CfeGaussianBlur%20in%3D%22SourceGraphic%22%20stdDeviation%3D%220.026%22%2F%3E%3C%2Ffilter%3E%3C%2Fdefs%3E%3Cmask%20id%3D%22m%22%20maskUnits%3D%22objectBoundingBox%22%20maskContentUnits%3D%22objectBoundingBox%22%3E%3Crect%20width%3D%221%22%20height%3D%221%22%20fill%3D%22url(%23g)%22%20filter%3D%22url(%23f)%22%2F%3E%3C%2Fmask%3E%3C%2Fsvg%3E#m")
-      no-repeat center / 100% 100%;
+    -webkit-mask-image: linear-gradient(
+      to right,
+      rgba(255, 255, 255, 1) 0%,
+      rgba(255, 255, 255, 1) 72%,
+      rgba(255, 255, 255, 0.55) 82%,
+      rgba(255, 255, 255, 0.14) 92%,
+      rgba(255, 255, 255, 0) 100%
+    );
+    mask-image: linear-gradient(
+      to right,
+      rgba(255, 255, 255, 1) 0%,
+      rgba(255, 255, 255, 1) 72%,
+      rgba(255, 255, 255, 0.55) 82%,
+      rgba(255, 255, 255, 0.14) 92%,
+      rgba(255, 255, 255, 0) 100%
+    );
+    -webkit-mask-repeat: no-repeat;
+    mask-repeat: no-repeat;
+    -webkit-mask-size: 100% 100%;
+    mask-size: 100% 100%;
+    -webkit-mask-position: center;
+    mask-position: center;
     -webkit-mask-type: alpha;
     mask-type: alpha;
   }
