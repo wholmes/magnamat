@@ -16,11 +16,11 @@ export function HeroSection({ hero }: Props) {
           <div className="hero-layout-grid">
             <div className="hero-stack-copy">
               <div
+                className="hero-eyebrow-wrap"
                 style={{
                   display: 'inline-flex',
                   alignItems: 'center',
                   gap: 10,
-                  marginBottom: 18,
                   padding: '8px 16px',
                   border: '1px solid rgba(22,22,22,0.1)',
                   background: 'rgba(255,255,255,0.55)',
@@ -52,6 +52,7 @@ export function HeroSection({ hero }: Props) {
                   {hero.eyebrow}
                 </span>
               </div>
+              <div className="hero-eyebrow-spacer" aria-hidden />
 
               <HeadlineFromSegments
                 as="h1"

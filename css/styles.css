@@ -686,6 +686,17 @@ body::after {
   }
 }
 
+/* Hero eyebrow (still rendered from CMS) — hidden visually; remove rule to show again */
+.hero-eyebrow-wrap {
+  display: none !important;
+}
+/* Reserves the same vertical band as the pill (padding + mono line / dot) + former margin below */
+.hero-eyebrow-spacer {
+  height: 32px;
+  margin-bottom: 18px;
+  pointer-events: none;
+}
+
 /* Two-column hero at lg — plain CSS so copy + product do not stack when utilities fail */
 .hero-layout-grid {
   display: grid;
