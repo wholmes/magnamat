@@ -148,6 +148,20 @@ export async function saveHeroSceneCamera(_prev: SaveState | undefined, formData
   return { ok: true };
 }
 
+export async function saveFeaturesSceneCamera(_prev: SaveState | undefined, formData: FormData): Promise<SaveState> {
+  await requireCmsSession();
+  const raw = String(formData.get('configJson') ?? '');
+  const checked = tryParseHeroSceneCameraFromEditor(raw);
+  if (!checked.ok) return { error: checked.error };
+  await prisma.featuresSceneCamera.upsert({
+    where: { id: 'default' },
+    create: { id: 'default', configJson: heroSceneCameraToJson(checked.config) },
+    update: { configJson: heroSceneCameraToJson(checked.config) },
+  });
+  revalidateAfterCmsWrite();
+  return { ok: true };
+}
+
 export async function saveMarketingPage(_prev: SaveState | undefined, formData: FormData): Promise<SaveState> {
   await requireCmsSession();
   const raw = String(formData.get('contentJson') ?? '');

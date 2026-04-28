@@ -17,7 +17,7 @@ export default async function AdminSitePage() {
     dbReadHadError = true;
   };
 
-  const [chromeRow, settingsRow, seoRow, heroCameraRow] = await Promise.all([
+  const [chromeRow, settingsRow, seoRow, heroCameraRow, featuresCameraRow] = await Promise.all([
     prisma.siteChrome
       .findUnique({ where: { id: 'default' } })
       .catch((e) => {
@@ -46,6 +46,13 @@ export default async function AdminSitePage() {
         logAdminDbReadError('HeroSceneCamera', e);
         return null;
       }),
+    prisma.featuresSceneCamera
+      .findUnique({ where: { id: 'default' } })
+      .catch((e) => {
+        mark();
+        logAdminDbReadError('FeaturesSceneCamera', e);
+        return null;
+      }),
   ]);
 
   const chromeResolved = chromeRow?.configJson ? parseChromeConfig(chromeRow.configJson) : DEFAULT_CHROME;
@@ -60,6 +67,10 @@ export default async function AdminSitePage() {
   const heroSceneResolved =
     heroCameraRow?.configJson != null ? parseHeroSceneCameraFromJson(heroCameraRow.configJson) : null;
   const heroSceneJson = JSON.stringify(heroSceneResolved ?? FALLBACK_HERO_SCENE_CAMERA, null, 2);
+
+  const featuresSceneResolved =
+    featuresCameraRow?.configJson != null ? parseHeroSceneCameraFromJson(featuresCameraRow.configJson) : null;
+  const featuresSceneJson = JSON.stringify(featuresSceneResolved ?? FALLBACK_HERO_SCENE_CAMERA, null, 2);
 
   return (
     <>
@@ -76,6 +87,7 @@ export default async function AdminSitePage() {
         seoDescription={seoDescription}
         seoNoIndex={seoNoIndex}
         heroSceneJson={heroSceneJson}
+        featuresSceneJson={featuresSceneJson}
         dbReadHadError={dbReadHadError}
       />
     </>

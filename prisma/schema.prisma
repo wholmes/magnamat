@@ -47,3 +47,10 @@ model HeroSceneCamera {
   configJson String
   updatedAt  DateTime @updatedAt
 }
+
+/// Singleton `id: "default"` — Features “Built different” `#mat-canvas-scroll` (same JSON shape as hero).
+model FeaturesSceneCamera {
+  id         String   @id @default("default")
+  configJson String
+  updatedAt  DateTime @updatedAt
+}

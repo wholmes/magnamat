@@ -217,7 +217,10 @@ export function HeroSection({ hero }: Props) {
         </div>
       </div>
 
-      <div className="hero-marquee" aria-hidden>
+      <div
+        className={hero.marqueeScroll === false ? 'hero-marquee hero-marquee--static' : 'hero-marquee'}
+        aria-hidden
+      >
         <div className="marquee-track" style={{ display: 'inline-block' }}>
           <span
             style={{

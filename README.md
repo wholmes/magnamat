@@ -146,19 +146,43 @@ CSS custom properties (high level):
 
 ---
 
-## 3D hero (`lib/mat-scene.ts` + `#mat-canvas`)
+## 3D / WebGL (`lib/mat-scene.ts`)
+
+Runtime is booted from `components/client-runtime.tsx` after paint. **`js/main.mjs`** mirrors the same URL flags and preset keys for **`legacy/index.html`**.
+
+### Hero (`#mat-canvas`)
 
 - **Eufy plate reference photo** — `public/images/hero-product-pinfield.png`, rendered with **`next/image`** in `components/marketing/hero-section.tsx` behind the canvas (`css/styles.css` — `.hero-product-photo`). Stays visible through the WebGL layer; the hero **shader sky** uses **moderate alpha** so the wash does not read as an opaque gray slab over the photo.
-- **Three.js** `0.160.0` via npm; runtime booted from `components/client-runtime.tsx` after paint.
+- **Three.js** `0.160.0` via npm.
 - **OrbitControls** — damped orbit, pan off, distance clamp, polar limits for overhead views.
 - **Scene:** ACES tone mapping, soft shadows, hemisphere + directional lights, large **shader sky** sphere (subtle animated wash).
 - **Product:** “Sandwich” — black base affix, steel frame + build plate, **instanced pin field** (Lambert pins), blue top sheet; gaps animate apart on **scroll** and extra on **hover** over the canvas.
 - **Scroll “travel”:** `hero3dRoot` group wraps mat + field lines; long-scroll smoothstep drives **tilt / lift / drift** so the stack moves in frame without fighting orbit. **`prefers-reduced-motion: reduce`** disables that world travel (stack spread still follows scroll).
 - **Default camera:** loaded from **CMS → Site & metadata → Hero 3D camera** (Postgres), injected as JSON in the marketing layout; bundled **`FALLBACK_HERO_SCENE_CAMERA`** in `lib/cms/hero-scene-camera.ts` if the DB row is missing.
-- **View lock-in (`?adjust=1`)**
-  - Panel: **Save view (this device)** → `localStorage` backup while tuning; **Copy JSON** → paste into CMS Hero 3D camera and save for all visitors; **Open CMS** → `/admin`; **Save zoom only** → localStorage orbit distance without `?adjust=1`; **Clear local & reload**.
-  - While `?adjust=1` is on, a full **localStorage** preset still overrides the CMS script for that session so you can iterate without publishing.
-  - **Console:** `window.__magnamatScene` — `saveLockedView()`, `clearLockedView()`, `copyJsonForCms()`, `logDefaultAngle()` (debug).
+
+### Features — “Built different” (`#mat-canvas-scroll`)
+
+- Second scene in the Features section: **mug / 3D model** modes, **CSS2D** callouts (Top sheet, Pin matrix, Flex steel), print preset toolbar; shares the same procedural mat stack as the hero path where applicable.
+- **Default camera:** if **Site & metadata → Features 3D camera** (`FeaturesSceneCamera` in Postgres) is saved, the marketing layout injects **`#magnamat-features-scene-config`** (same JSON shape as the hero). Otherwise the client uses the **hero** CMS camera plus a small **built-in framing nudge** for the jig. **`prefers-reduced-motion: reduce`** skips booting this canvas entirely.
+- **Tuning is separate from the hero:** use **`?adjustFeatures=1`** or **`?adjustScroll=1`** (alias). Legacy **`?adjust=1` alone does not** turn on the features tuner — only the hero — so you can tune one viewport without the other.
+- **While tuning:** `localStorage` **`magnamat-view-preset-features`** overrides the injected CMS JSON for that session (hero uses **`magnamat-view-preset`**). Publish by pasting **Copy JSON** into **Features 3D camera** in admin and saving.
+- **Console (when features tuning is on):** `window.__magnamatSceneFeatures` — `saveLockedView()`, `clearLockedView()`, `copyJsonForCms()`, `logDefaultAngle()`, etc.
+
+### View lock-in — URL flags
+
+| Query (or hash, e.g. `#?adjustFeatures=1`) | Effect |
+|--------------------------------------------|--------|
+| **`adjust=1`** | **Hero** tuning: floating panel, wheel zoom on canvas, touch orbit unlock on narrow viewports. Full preset in **`magnamat-view-preset`** overrides CMS for that session. |
+| **`adjustHero=1`** | Same as **`adjust=1`** for the hero only (explicit hero flag). |
+| **`adjustHero=0`** | Turns **hero** tuning **off** even if **`adjust=1`** is present (useful with **`adjustFeatures=1`**). |
+| **`adjustFeatures=1`** | **Features** column WebGL only: panel + zoom/orbit unlock; preset **`magnamat-view-preset-features`**. |
+| **`adjustScroll=1`** | Alias for **`adjustFeatures=1`** (matches the scroll canvas id). |
+
+**Hero panel:** **Save view (this device)** → `magnamat-view-preset`; **Copy JSON** → CMS **Hero 3D camera**; **Open CMS** → `/admin`; **Save zoom only** → `magnamat-default-zoom` (also applies without adjust flags); **Clear local & reload** clears hero preset + default zoom.
+
+**Features panel:** same actions scoped to **`magnamat-view-preset-features`**; **Open CMS** opens **`/admin`** (paste into **Features 3D camera**); clear does **not** remove **`magnamat-default-zoom`** (shared zoom key).
+
+**Console — hero:** `window.__magnamatScene` — `saveLockedView()`, `clearLockedView()`, `copyJsonForCms()`, `logDefaultAngle()`.
 
 ---
 
@@ -215,7 +239,8 @@ Then set `DATABASE_URL` in `.env` to point at `127.0.0.1:5432` (see `.env.exampl
 - **Sign in:** [http://localhost:3000/admin/login](http://localhost:3000/admin/login) (production: `/admin/login` on your domain).
 - **After login:** authenticated **CMS shell** with a **left sidebar** — navigate between **Site & metadata** (`/admin`: chrome JSON, settings, SEO) and **Home page** (`/admin/content`: full marketing JSON). **View live site** and **Log out** live in the sidebar footer.
 - **Home page copy** uses `MarketingPageContent` in `lib/cms/marketing-content.ts`; saves go to `MarketingPage`. Server actions call **`revalidateAfterCmsWrite()`** so `/`, `/features`, `/specs`, `/compat`, `/robots.txt`, and admin routes pick up new data without a redeploy.
-- **Hero 3D camera** — JSON on **`HeroSceneCamera`** (Site & metadata). Injected into the marketing layout as `#magnamat-hero-scene-config`; `lib/mat-scene.ts` reads it on load. Use **`?adjust=1`** to tune, then paste the same JSON shape into the CMS (localStorage still wins while `?adjust=1` is on).
+- **Hero 3D camera** — JSON on **`HeroSceneCamera`** (Site & metadata). Injected as `#magnamat-hero-scene-config`. Use **`?adjust=1`** or **`?adjustHero=1`** to tune; **`magnamat-view-preset`** in localStorage still wins for the hero while those flags are on.
+- **Features 3D camera** — JSON on **`FeaturesSceneCamera`** (same schema as hero). Injected as **`#magnamat-features-scene-config`** only after you save a row in Site & metadata. Until then, the features canvas uses the hero CMS preset + built-in nudge. Tune with **`?adjustFeatures=1`**; **`magnamat-view-preset-features`** overrides for that session until you publish via CMS.
 - **SEO / staging:** in **Site & metadata → SEO**, **Discourage search indexing** sets `noindex` on pages and a restrictive **`/robots.txt`** (use for preview hosts).
 - **Environment:** set **`CMS_ADMIN_PASSWORD`** and **`CMS_SESSION_SECRET`** (≥ 24 characters) in `.env`. The session cookie is **httpOnly**, **signed** (HMAC), scoped to **`/admin`**, and cleared on **Log out**.
 
@@ -226,6 +251,7 @@ There is no third-party CMS product — only this repo’s Prisma models + admin
 - Prefer **`npm run db:migrate:deploy`** (or **`db:migrate:dev`** locally) over `db push` for anything that should ship to production.
 - If the app errors with **`SeoSettings.noIndex` does not exist** (older DB from `db push`), run **`npm run db:fix-seo-noindex`** once.
 - If core tables are missing (e.g. seed fails with **`MarketingPage` does not exist**), run **`npm run db:bootstrap-db`** once, or **`npm run db:ensure-core-tables`** then **`npm run db:seed`**. (`db:fix-hero-scene-camera` is an alias for `db:ensure-core-tables`.)
+- If **`FeaturesSceneCamera` does not exist** (admin save on Features 3D camera fails), run **`npm run db:migrate:deploy`** on that database, or once: **`npm run db:fix-features-scene-camera`** (idempotent `CREATE TABLE IF NOT EXISTS`).
 - **Docker Postgres on port 5434:** `npm run db:up` (see `.env.docker.example` → copy to `.env.docker`), then `npm run db:migrate:deploy:local` and `npm run db:seed:local`.
 - **Upgrading an older DB** that was created with `db push` only: add missing columns to match `prisma/schema.prisma`, then **`npx prisma migrate resolve`** / baseline per [Prisma docs](https://www.prisma.io/docs/guides/migrate/developing-with-prisma-migrate/baselining), or reset the database and run **`npm run db:migrate:deploy`** on an empty instance.
 

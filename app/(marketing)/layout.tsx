@@ -4,11 +4,16 @@ import { PromoModal } from '@/components/promo-modal';
 import { SiteNav } from '@/components/site-nav';
 import { YtLightbox } from '@/components/yt-lightbox';
 import { heroSceneCameraToJson } from '@/lib/cms/hero-scene-camera';
-import { getHeroSceneCameraConfig, getSiteChrome } from '@/lib/cms/queries';
+import { getFeaturesSceneCameraConfig, getHeroSceneCameraConfig, getSiteChrome } from '@/lib/cms/queries';
 
 export default async function MarketingSiteLayout({ children }: { children: React.ReactNode }) {
-  const [chrome, heroScene] = await Promise.all([getSiteChrome(), getHeroSceneCameraConfig()]);
+  const [chrome, heroScene, featuresScene] = await Promise.all([
+    getSiteChrome(),
+    getHeroSceneCameraConfig(),
+    getFeaturesSceneCameraConfig(),
+  ]);
   const heroSceneJson = heroSceneCameraToJson(heroScene);
+  const featuresSceneJson = featuresScene != null ? heroSceneCameraToJson(featuresScene) : null;
 
   return (
     <>
@@ -21,6 +26,13 @@ export default async function MarketingSiteLayout({ children }: { children: Reac
         type="application/json"
         dangerouslySetInnerHTML={{ __html: heroSceneJson }}
       />
+      {featuresSceneJson != null ? (
+        <script
+          id="magnamat-features-scene-config"
+          type="application/json"
+          dangerouslySetInnerHTML={{ __html: featuresSceneJson }}
+        />
+      ) : null}
       <script
         id="magnamat-commerce-config"
         type="application/json"

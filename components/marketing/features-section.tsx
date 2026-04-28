@@ -55,10 +55,9 @@ export function FeaturesSection({ features, printPresets }: Props) {
   return (
     <section
       id="features"
-      className="bg-grid"
+      className="features-built-section"
       style={{
         padding: '20px 24px 110px',
-        backgroundColor: 'var(--page-2)',
         position: 'relative',
         overflow: 'hidden',
       }}
@@ -150,25 +149,6 @@ export function FeaturesSection({ features, printPresets }: Props) {
               </div>
             </div>
 
-            <div className="features-view-mode-wrap">
-              <div className="features-print-presets" role="toolbar" aria-label="Jig preview shape">
-                <button
-                  type="button"
-                  data-features-view-mode="mug"
-                  className="features-print-presets__btn features-print-presets__btn--active"
-                >
-                  Mug
-                </button>
-                <button type="button" data-features-view-mode="skyscraper" className="features-print-presets__btn">
-                  3D Model
-                </button>
-              </div>
-              <p id="features-view-caption" className="features-print-caption">
-                {printPresets[0]?.caption
-                  ? `Mug · ${printPresets[0].caption}`
-                  : 'Mug wrap · demo art from first chrome preset.'}
-              </p>
-            </div>
           </div>
 
           <header className="features-hero-split__intro reveal">
@@ -183,7 +163,29 @@ export function FeaturesSection({ features, printPresets }: Props) {
           </header>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-5 js-features-cards-shift">
+        <div className="features-hero-split-after">
+          <div className="features-view-mode-wrap">
+            <div className="features-print-presets" role="toolbar" aria-label="Jig preview shape">
+              <button
+                type="button"
+                data-features-view-mode="mug"
+                className="features-print-presets__btn features-print-presets__btn--active"
+              >
+                Mug
+              </button>
+              <button type="button" data-features-view-mode="skyscraper" className="features-print-presets__btn">
+                3D Model
+              </button>
+            </div>
+            <p id="features-view-caption" className="features-print-caption">
+              {printPresets[0]?.caption
+                ? `Mug · ${printPresets[0].caption}`
+                : 'Mug wrap · demo art from first chrome preset.'}
+            </p>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 features-cards-grid">
           <div className="f-card reveal">
             <div className="f-card-icon f-card-icon--pins" aria-hidden>
               <svg className="f-card-iso" viewBox="0 0 56 56" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -218,9 +220,7 @@ export function FeaturesSection({ features, printPresets }: Props) {
                 </g>
               </svg>
             </div>
-            <h3 className="font-display font-semibold" style={{ fontSize: '1.6rem', marginBottom: 12, color: 'var(--ink)' }}>
-              {f.cardPins.title}
-            </h3>
+            <h3 className="f-card__title font-display font-semibold">{f.cardPins.title}</h3>
             <p style={{ color: 'var(--ink-muted)', lineHeight: 1.75, fontSize: 14, marginBottom: 22 }}>
               {normalizeMultiline(f.cardPins.body)}
             </p>
@@ -265,9 +265,7 @@ export function FeaturesSection({ features, printPresets }: Props) {
                 />
               </svg>
             </div>
-            <h3 className="font-display font-semibold" style={{ fontSize: '1.6rem', marginBottom: 12, color: 'var(--ink)' }}>
-              {f.cardFlex.title}
-            </h3>
+            <h3 className="f-card__title font-display font-semibold">{f.cardFlex.title}</h3>
             <p style={{ color: 'var(--ink-muted)', lineHeight: 1.75, fontSize: 14, marginBottom: 22 }}>
               {normalizeMultiline(f.cardFlex.body)}
             </p>
@@ -344,9 +342,7 @@ export function FeaturesSection({ features, printPresets }: Props) {
                 <path d="M32 28 L34 32 L40 24" stroke="#1a1a1a" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
               </svg>
             </div>
-            <h3 className="font-display font-semibold" style={{ fontSize: '1.6rem', marginBottom: 12, color: 'var(--ink)' }}>
-              {f.cardMaterials.title}
-            </h3>
+            <h3 className="f-card__title font-display font-semibold">{f.cardMaterials.title}</h3>
             <p style={{ color: 'var(--ink-muted)', lineHeight: 1.75, fontSize: 14, marginBottom: 22 }}>
               {normalizeMultiline(f.cardMaterials.body)}
             </p>

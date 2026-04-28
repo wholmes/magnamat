@@ -74,3 +74,19 @@ export const getHeroSceneCameraConfig = cache(async (): Promise<HeroSceneCameraC
   }
   return FALLBACK_HERO_SCENE_CAMERA;
 });
+
+/**
+ * Features “Built different” WebGL (`#mat-canvas-scroll`). Same JSON shape as hero.
+ * `null` = no row / invalid JSON → client uses hero CMS preset + built-in framing nudge.
+ */
+export const getFeaturesSceneCameraConfig = cache(async (): Promise<HeroSceneCameraConfig | null> => {
+  try {
+    const row = await prisma.featuresSceneCamera.findUnique({ where: { id: 'default' } });
+    if (row?.configJson) {
+      return parseHeroSceneCameraFromJson(row.configJson);
+    }
+  } catch {
+    /* ignore */
+  }
+  return null;
+});

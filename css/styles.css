@@ -96,7 +96,7 @@ a.btn-outline:focus-visible {
   .btn-primary:hover,
   .btn-outline:hover { transform: none; }
   .skip-link { transition: none; }
-  .js-features-cards-shift { will-change: auto; }
+  #features .features-cards-grid { will-change: auto; }
   body::after {
     opacity: 0.018;
   }
@@ -169,6 +169,10 @@ body::after {
   background: transparent;
   overflow: hidden;
 }
+/* Features column: CSS2D callouts extend past canvas bounds — don’t clip labels */
+#features #canvas-container-scroll {
+  overflow: visible;
+}
 #mat-canvas,
 #mat-canvas-scroll {
   display: block;
@@ -201,6 +205,38 @@ body::after {
   z-index: 2;
 }
 
+/*
+ * Features (“Built different”) — corner wash + soft black depth (lighter top-right than global
+ * `--corner-vignette` so the section stays airy), over a cool sheet + hairline grid.
+ */
+.features-built-section {
+  background-color: #dde1e9;
+  background-image:
+    radial-gradient(ellipse 110% 80% at 92% 6%, rgba(0, 0, 0, 0.3) 0%, transparent 52%),
+    radial-gradient(ellipse 88% 58% at 50% 108%, rgba(0, 0, 0, 0.14) 0%, transparent 52%),
+    radial-gradient(ellipse 95% 70% at 50% -18%, rgba(255, 255, 255, 0.34), transparent 52%),
+    linear-gradient(
+      172deg,
+      rgba(18, 18, 22, 0.07) 0%,
+      transparent 32%,
+      transparent 58%,
+      rgba(12, 12, 14, 0.06) 100%
+    ),
+    linear-gradient(rgba(22, 22, 22, 0.045) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(22, 22, 22, 0.045) 1px, transparent 1px);
+  background-size: auto, auto, 100% 100%, 100% 100%, 52px 52px, 52px 52px;
+  background-repeat: no-repeat, no-repeat, no-repeat, no-repeat, repeat, repeat;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.48);
+}
+.features-built-section .features-section__logo-bg {
+  opacity: 0.065;
+}
+@media (min-width: 1024px) {
+  .features-built-section .features-section__logo-bg {
+    opacity: 0.075;
+  }
+}
+
 /* Specs — Eufy Make E1 line drawing as soft watermark (SVG has white plate; multiply drops it out) */
 .specs-section__eufy-bg {
   position: absolute;
@@ -228,8 +264,8 @@ body::after {
 /* Features: WebGL left, section headline right (stacks headline-first on narrow viewports) */
 .features-hero-split {
   display: grid;
-  gap: 28px 40px;
-  margin-bottom: 40px;
+  gap: clamp(24px, 4vw, 36px) clamp(28px, 4vw, 44px);
+  margin-bottom: 0;
   align-items: start;
 }
 .features-hero-split__visual {
@@ -241,12 +277,12 @@ body::after {
 }
 @media (min-width: 1024px) {
   .features-hero-split {
-    grid-template-columns: minmax(0, 1fr) minmax(0, 1.08fr);
+    grid-template-columns: minmax(0, 1.12fr) minmax(0, 0.88fr);
     align-items: center;
-    gap: 36px 52px;
+    gap: clamp(20px, 3vw, 28px) clamp(20px, 2.8vw, 32px);
   }
   .features-hero-split__intro {
-    justify-self: end;
+    justify-self: start;
     text-align: left;
   }
 }
@@ -255,26 +291,28 @@ body::after {
     order: -1;
   }
 }
-.features-hero-split__visual .features-view-mode-wrap {
+/* Mug / 3D toggles sit under the hero row so the headline centers to the canvas, not canvas+chrome */
+.features-hero-split-after {
+  margin-bottom: clamp(36px, 5vw, 52px);
+}
+.features-hero-split-after .features-view-mode-wrap {
   max-width: 100%;
   margin-top: 18px;
   margin-left: 0;
   margin-right: 0;
 }
 
-/* Features slot: second WebGL clips open between headline and three cards */
+/* Features WebGL: static slot (no scroll-driven clip / parallax) */
 .features-3d-reveal {
-  overflow: hidden;
-  height: 0;
-  margin-bottom: 8px;
-  transition: none;
+  overflow: visible;
+  height: auto;
+  margin-bottom: clamp(10px, 2vw, 18px);
 }
 .features-3d-reveal__host {
-  /* Intrinsic height from .features-3d-reveal__canvas — not % of parent (starts at 0) */
   height: auto;
   width: 100%;
-  opacity: 0;
-  will-change: opacity, transform;
+  opacity: 1;
+  will-change: auto;
 }
 .features-3d-reveal__canvas {
   width: 100%;
@@ -282,6 +320,23 @@ body::after {
 }
 .features-3d-reveal__stage {
   min-height: 0;
+}
+
+/* Features: no scroll-reveal / stagger in this section — layout reads immediately */
+#features .reveal {
+  opacity: 1;
+  transform: none;
+  transition: none;
+}
+
+/* Three-up cards — spacing only here so it wins over utility order */
+#features .features-cards-grid {
+  gap: clamp(1.15rem, 2.8vw, 1.5rem);
+}
+@media (min-width: 768px) {
+  #features .features-cards-grid {
+    gap: 1.65rem;
+  }
 }
 
 .features-view-mode-wrap {
@@ -368,15 +423,15 @@ body::after {
   }
 }
 
-/* Hero + major section titles — same scale */
+/* Hero + major section titles — same scale (base = phone; larger min so small viewports read bold) */
 .hero-title,
 .display-headline {
-  font-size: clamp(1.45rem, min(4.6vw, 7.5svh), 2.35rem);
+  font-size: clamp(1.78rem, min(5.8vw, 9svh), 2.65rem);
 }
 @media (min-width: 640px) {
   .hero-title,
   .display-headline {
-    font-size: clamp(1.65rem, 5vw, 2.85rem);
+    font-size: clamp(1.82rem, 5.2vw, 2.95rem);
   }
 }
 @media (min-width: 1024px) {
@@ -571,6 +626,18 @@ body::after {
 }
 .f-card:hover::after { transform: scaleX(1); }
 
+/* Feature cards — title scales up on narrow viewports (was fixed 1.6rem inline) */
+.f-card__title {
+  font-size: 1.6rem;
+  margin-bottom: 12px;
+  color: var(--ink);
+}
+@media (max-width: 639px) {
+  .f-card__title {
+    font-size: clamp(1.78rem, 5.4vw, 2.05rem);
+  }
+}
+
 /* Reveal on scroll */
 .reveal { opacity: 0; transform: translateY(28px); transition: opacity 0.7s ease, transform 0.7s ease; }
 .revealed { opacity: 1; transform: none; }
@@ -602,7 +669,7 @@ body::after {
   background-color: #ffffff;
   background-image:
     var(--corner-vignette),
-    radial-gradient(ellipse 80% 55% at 10% 72%, rgba(229, 52, 42, 0.22) 0%, transparent 48%),
+    radial-gradient(ellipse 80% 55% at 10% 72%, rgba(0, 0, 0, 0.2) 0%, transparent 50%),
     radial-gradient(ellipse 70% 50% at 50% 32%, rgba(255, 255, 255, 0.5) 0%, transparent 55%),
     linear-gradient(172deg, #e8e8ea 0%, #efeff2 24%, #f5f5f7 46%, #fafafc 68%, #ffffff 86%, #ffffff 100%),
     linear-gradient(rgba(22, 22, 22, 0.038) 1px, transparent 1px),
@@ -772,14 +839,28 @@ body::after {
 /* Section label */
 .sec-label {
   font-family: var(--font-space-mono), monospace;
-  font-size: 11px; letter-spacing: 0.2em;
-  text-transform: uppercase; color: var(--red);
+  font-size: 11px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--red);
+}
+@media (max-width: 639px) {
+  .sec-label {
+    font-size: 13px;
+    letter-spacing: 0.16em;
+  }
 }
 
 /* Marquee */
 @keyframes marquee { from { transform: translateX(0); } to { transform: translateX(-50%); } }
 .marquee-track { white-space: nowrap; animation: marquee 22s linear infinite; }
 .marquee-track:hover { animation-play-state: paused; }
+.hero-marquee--static .marquee-track {
+  animation: none;
+}
+.hero-marquee--static .marquee-track:hover {
+  animation: none;
+}
 
 /* Status pulse */
 @keyframes pulse-dot { 0%, 100% { opacity: 1; } 50% { opacity: 0.35; } }

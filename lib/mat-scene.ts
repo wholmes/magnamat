@@ -41,6 +41,11 @@ export function disposeMarketingMatScenes() {
   } catch (_) {
     __g.__magnamatScene = undefined;
   }
+  try {
+    delete __g.__magnamatSceneFeatures;
+  } catch (_) {
+    __g.__magnamatSceneFeatures = undefined;
+  }
   if (__g.__MAGNAMAT_FEATURES_VIEW_MODE_CLICK) {
     try {
       document.removeEventListener('click', __g.__MAGNAMAT_FEATURES_VIEW_MODE_CLICK, false);
@@ -228,6 +233,8 @@ function showCanvasError(container, message) {
 }
 
 const VIEW_PRESET_STORAGE_KEY = 'magnamat-view-preset';
+/** Full camera preset for the Features (“Built different”) WebGL column — separate from hero CMS/localStorage. */
+const FEATURES_VIEW_PRESET_STORAGE_KEY = 'magnamat-view-preset-features';
 /** Orbit radius only — applied after full view / code defaults so you can lock wheel zoom separately */
 const ZOOM_PRESET_STORAGE_KEY = 'magnamat-default-zoom';
 
@@ -259,16 +266,16 @@ function orbitDistance(camera, controls) {
 }
 
 /** Persist zoom; if a full view preset exists, keep its distance in sync. */
-function persistZoomPreset(distance, controls) {
+function persistZoomPreset(distance, controls, syncFullPresetStorageKey = VIEW_PRESET_STORAGE_KEY) {
   const clamped = THREE.MathUtils.clamp(distance, controls.minDistance, controls.maxDistance);
   localStorage.setItem(ZOOM_PRESET_STORAGE_KEY, JSON.stringify({ v: 1, distance: clamped }));
   try {
-    const raw = localStorage.getItem(VIEW_PRESET_STORAGE_KEY);
+    const raw = localStorage.getItem(syncFullPresetStorageKey);
     if (!raw) return;
     const p = JSON.parse(raw);
     if (p && p.v === 1) {
       p.distance = clamped;
-      localStorage.setItem(VIEW_PRESET_STORAGE_KEY, JSON.stringify(p));
+      localStorage.setItem(syncFullPresetStorageKey, JSON.stringify(p));
     }
   } catch (_) {}
 }
@@ -278,9 +285,13 @@ function clearZoomPreset() {
 }
 
 function loadFullViewPresetFromLocalStorage() {
+  return loadFullViewPresetFromLocalStorageByKey(VIEW_PRESET_STORAGE_KEY);
+}
+
+function loadFullViewPresetFromLocalStorageByKey(storageKey) {
   if (typeof window === 'undefined') return null;
   try {
-    const raw = localStorage.getItem(VIEW_PRESET_STORAGE_KEY);
+    const raw = localStorage.getItem(storageKey);
     if (!raw) return null;
     const parsed = JSON.parse(raw);
     return heroSceneCameraFromUnknown(parsed);
@@ -298,6 +309,15 @@ function loadHeroSceneFromDom() {
   return parseHeroSceneCameraFromJson(raw);
 }
 
+/** Optional server JSON for the Features column WebGL (`#magnamat-features-scene-config`). */
+function loadFeaturesSceneFromDom() {
+  if (typeof document === 'undefined') return null;
+  const el = document.getElementById('magnamat-features-scene-config');
+  const raw = el?.textContent?.trim();
+  if (!raw) return null;
+  return parseHeroSceneCameraFromJson(raw);
+}
+
 function resolveHeroScenePreset(isAdjustMode) {
   if (isAdjustMode) {
     const ls = loadFullViewPresetFromLocalStorage();
@@ -308,8 +328,21 @@ function resolveHeroScenePreset(isAdjustMode) {
   return FALLBACK_HERO_SCENE_CAMERA;
 }
 
-function applyHeroSceneCameraState(camera, controls, matGroup, isAdjustMode) {
-  const preset = resolveHeroScenePreset(isAdjustMode);
+/**
+ * Features column: `?adjustFeatures=1` localStorage wins; else CMS `#magnamat-features-scene-config`
+ * if present; else hero marketing default + automatic framing nudge in `startScene`.
+ */
+function resolveSecondaryScenePreset(isAdjustMode) {
+  if (isAdjustMode) {
+    const ls = loadFullViewPresetFromLocalStorageByKey(FEATURES_VIEW_PRESET_STORAGE_KEY);
+    if (ls) return { preset: ls, skipSecondaryNudge: true };
+  }
+  const fromDom = loadFeaturesSceneFromDom();
+  if (fromDom) return { preset: fromDom, skipSecondaryNudge: true };
+  return { preset: resolveHeroScenePreset(false), skipSecondaryNudge: false };
+}
+
+function applyViewPresetToScene(camera, controls, matGroup, preset) {
   const orbitTarget = new THREE.Vector3(preset.target[0], preset.target[1], preset.target[2]);
   controls.target.copy(orbitTarget);
   const camSph = new THREE.Spherical(
@@ -330,6 +363,11 @@ function applyHeroSceneCameraState(camera, controls, matGroup, isAdjustMode) {
   if (zoomOnly !== null) {
     applyOrbitDistance(camera, controls, zoomOnly);
   }
+}
+
+function applyHeroSceneCameraState(camera, controls, matGroup, isAdjustMode) {
+  const preset = resolveHeroScenePreset(isAdjustMode);
+  applyViewPresetToScene(camera, controls, matGroup, preset);
 }
 
 function captureViewPreset(camera, controls, matGroup) {
@@ -354,9 +392,17 @@ function captureViewPreset(camera, controls, matGroup) {
 function installViewTuner(container, ctx) {
   if (!ctx.isAdjustMode) return;
 
-  const { camera, controls, matGroup } = ctx;
+  const {
+    camera,
+    controls,
+    matGroup,
+    tunerKind = 'hero',
+    presetStorageKey = VIEW_PRESET_STORAGE_KEY,
+  } = ctx;
+  const isFeatures = tunerKind === 'features';
   const fixedSheet =
     typeof window !== 'undefined' && window.matchMedia?.('(max-width: 767px)')?.matches;
+  const mountParent = fixedSheet && !isFeatures ? document.body : container;
   const wrap = document.createElement('div');
   wrap.className = 'view-tuner-panel';
   wrap.style.cssText = fixedSheet
@@ -364,14 +410,20 @@ function installViewTuner(container, ctx) {
     : 'position:absolute;left:8px;right:8px;bottom:8px;z-index:6;max-height:46%;overflow:auto;padding:12px 14px;border-radius:12px;background:rgba(255,255,255,0.96);border:1px solid rgba(0,0,0,0.1);font:12px/1.45 system-ui,-apple-system,sans-serif;box-shadow:0 8px 28px rgba(0,0,0,0.12);color:#141414;';
 
   const title = document.createElement('div');
-  title.textContent = '3D view lock-in (?adjust=1)';
+  title.textContent = isFeatures
+    ? 'Features 3D (?adjustFeatures=1)'
+    : '3D view lock-in (?adjust=1 or ?adjustHero=1)';
   title.style.cssText = 'font-weight:600;margin-bottom:8px;font-size:13px;';
 
   const hint = document.createElement('p');
   hint.style.cssText = 'margin:0 0 10px;color:#555;font-size:11px;line-height:1.45;';
-  hint.textContent = fixedSheet
-    ? 'Drag to orbit; pinch to zoom. Save view = this device only. Copy JSON → Admin → Site & metadata → Hero 3D camera → paste & save. Open CMS opens /admin. Clear removes local saves and reloads. Remove ?adjust=1 to hide.'
-    : 'Drag to orbit; scroll to zoom on the canvas. Save view stores this browser only (while ?adjust=1). Copy JSON, then in CMS → Site & metadata → Hero 3D camera, paste and save for everyone. Open CMS opens /admin in a new tab. Save zoom only keeps wheel distance in localStorage without ?adjust=1. Clear removes local saves and reloads.';
+  hint.textContent = isFeatures
+    ? fixedSheet
+      ? 'Pinch to zoom; drag to orbit. Save view = this device (magnamat-view-preset-features). Copy JSON → Admin → Site & metadata → Features 3D camera → Save. Open CMS → /admin. Remove ?adjustFeatures=1 to hide.'
+      : 'Scroll zoom on this canvas; drag to orbit. Save view stores locally while tuning; Copy JSON then paste into Features 3D camera in Site & metadata to publish. Open CMS opens /admin. Remove ?adjustFeatures=1 (or ?adjustScroll=1) to hide.'
+    : fixedSheet
+      ? 'Drag to orbit; pinch to zoom. Save view = this device only. Copy JSON → Admin → Site & metadata → Hero 3D camera → paste & save. Open CMS opens /admin. Clear removes local saves and reloads. Remove ?adjust=1 to hide.'
+      : 'Drag to orbit; scroll to zoom on the canvas. Save view stores this browser only (while ?adjust=1). Copy JSON, then in CMS → Site & metadata → Hero 3D camera, paste and save for everyone. Open CMS opens /admin in a new tab. Save zoom only keeps wheel distance in localStorage without ?adjust=1. Clear removes local saves and reloads.';
 
   const readout = document.createElement('pre');
   readout.style.cssText =
@@ -395,18 +447,22 @@ function installViewTuner(container, ctx) {
   const bSave = btn('Save view (this device)', true);
   bSave.addEventListener('click', () => {
     const p = captureViewPreset(camera, controls, matGroup);
-    localStorage.setItem(VIEW_PRESET_STORAGE_KEY, JSON.stringify(p));
-    persistZoomPreset(p.distance, controls);
+    localStorage.setItem(presetStorageKey, JSON.stringify(p));
+    persistZoomPreset(p.distance, controls, presetStorageKey);
     bSave.textContent = 'Saved ✓';
     setTimeout(() => {
       bSave.textContent = 'Save view (this device)';
     }, 1600);
-    console.info('[magnamat] View saved to localStorage. Paste JSON into CMS → Hero 3D camera to publish for all visitors.');
+    console.info(
+      isFeatures
+        ? '[magnamat] View saved locally. Paste JSON into Admin → Site & metadata → Features 3D camera to publish.'
+        : '[magnamat] View saved to localStorage. Paste JSON into CMS → Hero 3D camera to publish for all visitors.'
+    );
   });
 
   const bSaveZoom = btn('Save zoom only (local)', false);
   bSaveZoom.addEventListener('click', () => {
-    persistZoomPreset(orbitDistance(camera, controls), controls);
+    persistZoomPreset(orbitDistance(camera, controls), controls, presetStorageKey);
     bSaveZoom.textContent = 'Zoom saved ✓';
     setTimeout(() => {
       bSaveZoom.textContent = 'Save zoom only (local)';
@@ -437,13 +493,15 @@ function installViewTuner(container, ctx) {
 
   const bClear = btn('Clear local & reload', false);
   bClear.addEventListener('click', () => {
-    localStorage.removeItem(VIEW_PRESET_STORAGE_KEY);
-    clearZoomPreset();
+    localStorage.removeItem(presetStorageKey);
+    if (!isFeatures) {
+      clearZoomPreset();
+    }
     window.location.reload();
   });
 
   wrap.append(title, hint, readout, bSave, bSaveZoom, bCopyJson, bCms, bClear);
-  (fixedSheet ? document.body : container).appendChild(wrap);
+  mountParent.appendChild(wrap);
 
   controls.addEventListener('change', refreshReadout);
   refreshReadout();
@@ -469,11 +527,10 @@ function installSecondaryMatCallouts({ container, W, H, coreGroup, topAffix, bot
       color: 0x2a2a2a,
       transparent: true,
       opacity: 0.48,
-      depthTest: false,
+      depthTest: true,
       depthWrite: false,
     });
     const line = new THREE.Line(geom, mat);
-    line.renderOrder = 10000;
     parent.add(line);
   }
 
@@ -482,14 +539,13 @@ function installSecondaryMatCallouts({ container, W, H, coreGroup, topAffix, bot
       new THREE.SphereGeometry(0.09, 10, 10),
       new THREE.MeshBasicMaterial({
         color,
-        depthTest: false,
+        depthTest: true,
         depthWrite: false,
         transparent: true,
         opacity: 0.92,
       })
     );
     mesh.position.set(x, y, z);
-    mesh.renderOrder = 10001;
     parent.add(mesh);
   }
 
@@ -500,23 +556,34 @@ function installSecondaryMatCallouts({ container, W, H, coreGroup, topAffix, bot
     return new CSS2DObject(div);
   }
 
-  const yTop = AFFIX_THICK / 2 + 0.02;
-  const yBase = AFFIX_THICK / 2 + 0.02;
+  /* Anchors sit on each sandwich layer’s visible top surface (local to parent). */
+  const affixTopFace = AFFIX_THICK / 2 + 0.016;
+  /* coreGroup +Y: pins are ~0.157–0.327; too-low Y sat in chrome / read as “in the gap” above the field. */
+  const pinLayerY = 0.242 + 0.17 / 2 - 0.02;
+  /* bottomAffix local: top face +AFFIX_THICK/2 — sit marker in the slab so it doesn’t read on the pin layer. */
+  const flexSteelDotY = -0.034;
 
-  const tsA = { x: -2.45, y: yTop, z: 2.05 };
-  const tsB = { x: -5.15, y: 0.88, z: 4.05 };
+  const tsA = { x: -1.25, y: affixTopFace, z: 1.05 };
+  /*
+   * Top sheet tag: centered over the stack in XZ, high +Y in topAffix space so it clears mug / skyscraper
+   * jig (far −x pulled the CSS2D point beside the mat and it read “on” the sheet from the orbit).
+   * Pin + flex stay far left; center (0.5, 1) = anchor at bottom of pill so copy sits above the 3D point.
+   */
+  const tsB = { x: 0.1, y: 4.12, z: 0.4 };
   addLeader(topAffix, tsA.x, tsA.y, tsA.z, tsB.x, tsB.y, tsB.z);
   addDot(topAffix, tsA.x, tsA.y, tsA.z, 0x3b9be5);
   const tsL = makeLabel('Top sheet', 'mat-callout-2d--sheet');
   tsL.position.set(tsB.x, tsB.y, tsB.z);
+  tsL.center.set(0.5, 1);
   topAffix.add(tsL);
 
-  const pA = { x: 2.05, y: 0.3, z: 1.28 };
-  const pB = { x: 5.75, y: 0.72, z: 2.75 };
+  const pA = { x: 0.55, y: pinLayerY, z: 0.65 };
+  const pB = { x: -8.35, y: 0.4, z: 2.05 };
   addLeader(coreGroup, pA.x, pA.y, pA.z, pB.x, pB.y, pB.z);
   addDot(coreGroup, pA.x, pA.y, pA.z, 0xe5342a);
   const pL = makeLabel('Pin matrix', 'mat-callout-2d--pins');
   pL.position.set(pB.x, pB.y, pB.z);
+  pL.center.set(0, 0.5);
   coreGroup.add(pL);
 
   const narrow =
@@ -524,12 +591,13 @@ function installSecondaryMatCallouts({ container, W, H, coreGroup, topAffix, bot
     window.matchMedia &&
     window.matchMedia('(max-width: 639px)').matches;
   if (!narrow) {
-    const fA = { x: 1.25, y: yBase, z: 2.28 };
-    const fB = { x: 4.65, y: 0.2, z: 4.85 };
+    const fA = { x: -0.35, y: flexSteelDotY, z: -0.55 };
+    const fB = { x: -8.35, y: -0.02, z: 0.65 };
     addLeader(bottomAffix, fA.x, fA.y, fA.z, fB.x, fB.y, fB.z);
     addDot(bottomAffix, fA.x, fA.y, fA.z, 0xc5d0da);
     const fL = makeLabel('Flex steel', 'mat-callout-2d--steel');
     fL.position.set(fB.x, fB.y, fB.z);
+    fL.center.set(0, 0.5);
     bottomAffix.add(fL);
   }
 
@@ -742,12 +810,37 @@ function createMugOnSideInJig() {
   inner.position.set(cupLen / 2 + 0.0024, 0, 0);
   group.add(inner);
 
-  const handleGeom = new THREE.TorusGeometry(0.092 * s, 0.023 * s, 8, 26, Math.PI * 1.28);
+  /*
+   * Handle: cubic Bézier tube with **both endpoints on the outer mantle** so the strip reads
+   * closed against the cup (partial torus always leaves two open ring cuts in mid-air).
+   * Mantle matches tapered cylinder after rotateZ(π/2): x along axis, radius r(x) in YZ.
+   */
+  function outerMantlePoint(xG, theta) {
+    const L = cupLen;
+    const r = radiusBot + ((radiusTop - radiusBot) * (-xG + L / 2)) / L;
+    return new THREE.Vector3(xG, r * Math.cos(theta), r * Math.sin(theta));
+  }
+  function yzRadialDir(theta) {
+    return new THREE.Vector3(0, Math.cos(theta), Math.sin(theta));
+  }
+  /* +π/2 mantle angle = +Z side of cup — matches original torus (positive z, same rotation family). */
+  const thBack = 0.5 * Math.PI;
+  const thLower = thBack - 0.11;
+  const pUpper = outerMantlePoint(cupLen * 0.24, thBack);
+  const pLower = outerMantlePoint(-cupLen * 0.2, thLower);
+  const bulge = 0.125 * s;
+  const c0 = pUpper
+    .clone()
+    .addScaledVector(yzRadialDir(thBack), bulge)
+    .add(new THREE.Vector3(0, -0.055 * s, -0.015 * s));
+  const c1 = pLower
+    .clone()
+    .addScaledVector(yzRadialDir(thLower), bulge)
+    .add(new THREE.Vector3(0, -0.055 * s, -0.015 * s));
+  const handleCurve = new THREE.CubicBezierCurve3(pUpper, c0, c1, pLower);
+  const handleTubeR = 0.0195 * s;
+  const handleGeom = new THREE.TubeGeometry(handleCurve, 56, handleTubeR, 10, false);
   const handle = new THREE.Mesh(handleGeom, ceramicMat);
-  handle.rotation.order = 'XYZ';
-  handle.rotation.x = Math.PI / 2;
-  handle.rotation.z = Math.PI * 0.2;
-  handle.position.set(-0.015 * s, -radiusBot * 0.32, radiusTop * 0.9);
   handle.castShadow = true;
   group.add(handle);
 
@@ -760,27 +853,61 @@ function createMugOnSideInJig() {
   return { group, printMat };
 }
 
-/** Tuning mode: accept adjust=1 / true / yes (case-insensitive); optional hash e.g. #adjust=1 */
-function isAdjustModeFromUrl(isSecondary) {
-  if (isSecondary || typeof window === 'undefined') return false;
+function getHashQueryString() {
+  if (typeof window === 'undefined' || !window.location.hash) return null;
+  let h = window.location.hash.replace(/^#/, '');
+  if (h.startsWith('?')) h = h.slice(1);
+  if (!h.includes('=')) return null;
+  return h;
+}
+
+function urlHasQueryKey(key) {
+  if (typeof window === 'undefined') return false;
   const q = new URLSearchParams(window.location.search);
-  let raw = q.get('adjust');
-  if (raw == null && window.location.hash) {
-    let h = window.location.hash.replace(/^#/, '');
-    if (h.startsWith('?')) h = h.slice(1);
-    if (/^adjust=|[&?]adjust=/i.test(h)) {
-      raw = new URLSearchParams(h).get('adjust');
-    }
-  }
+  if (q.has(key)) return true;
+  const hs = getHashQueryString();
+  if (!hs) return false;
+  return new URLSearchParams(hs).has(key);
+}
+
+/** Query or hash fragment (e.g. `#?adjustFeatures=1`). */
+function urlParamFromSearchAndHash(key) {
+  if (typeof window === 'undefined') return null;
+  const q = new URLSearchParams(window.location.search);
+  let v = q.get(key);
+  if (v != null && v !== '') return v;
+  const hs = getHashQueryString();
+  if (!hs) return null;
+  v = new URLSearchParams(hs).get(key);
+  if (v != null && v !== '') return v;
+  return null;
+}
+
+function parseAdjustTruthy(raw) {
   if (raw == null) return false;
   const v = String(raw).trim().toLowerCase();
   return v === '1' || v === 'true' || v === 'yes' || v === 'on';
 }
 
+/**
+ * Hero: `?adjust=1` (legacy) or `?adjustHero=1` — explicit `adjustHero=0` turns hero tuning off even if `adjust=1`.
+ * Features: `?adjustFeatures=1` or `?adjustScroll=1` (alias for the scroll canvas). Does not inherit legacy `adjust` alone.
+ */
+function isAdjustModeForScene(isSecondary) {
+  if (typeof window === 'undefined') return false;
+  if (isSecondary) {
+    if (urlHasQueryKey('adjustFeatures')) return parseAdjustTruthy(urlParamFromSearchAndHash('adjustFeatures'));
+    if (urlHasQueryKey('adjustScroll')) return parseAdjustTruthy(urlParamFromSearchAndHash('adjustScroll'));
+    return false;
+  }
+  if (urlHasQueryKey('adjustHero')) return parseAdjustTruthy(urlParamFromSearchAndHash('adjustHero'));
+  return parseAdjustTruthy(urlParamFromSearchAndHash('adjust'));
+}
+
 function startScene(container, canvas, options = {}) {
   const isSecondary = options.secondary === true;
   const featuresViewMode = isSecondary ? readFeaturesViewMode() : 'mug';
-  const isAdjustMode = isAdjustModeFromUrl(isSecondary);
+  const isAdjustMode = isAdjustModeForScene(isSecondary);
 
   let { w: W, h: H } = readCanvasSize(container);
   if (W < 32 || H < 32) {
@@ -906,7 +1033,7 @@ function startScene(container, canvas, options = {}) {
   }
 
   /* iOS: tabindex=0 canvas often eats the first tap for focus; tuning needs immediate orbit */
-  if (isAdjustMode && !isSecondary) {
+  if (isAdjustMode) {
     canvas.tabIndex = -1;
   }
   controls.minDistance = 5.5;
@@ -1265,23 +1392,28 @@ function startScene(container, canvas, options = {}) {
   canvas.addEventListener('pointerleave', onCanvasPointerLeave);
   canvas.addEventListener('pointerdown', onCanvasPointerDown, { passive: true });
 
-  applyHeroSceneCameraState(camera, controls, matGroup, isAdjustMode);
   if (isSecondary) {
-    /*
-     * Hero camera aims at a tall hero composition; the features jig reads low with extra “sky”
-     * above it. Nudge orbit slightly more equatorial + closer, and lift the stack vs hero offsets.
-     */
-    const off = camera.position.clone().sub(controls.target);
-    const sph = new THREE.Spherical().setFromVector3(off);
-    sph.phi = THREE.MathUtils.clamp(
-      sph.phi + THREE.MathUtils.degToRad(7),
-      controls.minPolarAngle + 0.02,
-      controls.maxPolarAngle - 0.02
-    );
-    sph.radius = THREE.MathUtils.clamp(sph.radius * 0.93, controls.minDistance + 0.02, controls.maxDistance - 0.02);
-    camera.position.setFromSpherical(sph).add(controls.target);
-    camera.lookAt(controls.target);
-    controls.update();
+    const { preset, skipSecondaryNudge } = resolveSecondaryScenePreset(isAdjustMode);
+    applyViewPresetToScene(camera, controls, matGroup, preset);
+    if (!skipSecondaryNudge) {
+      /*
+       * Hero camera aims at a tall hero composition; the features jig reads low with extra “sky”
+       * above it. Nudge orbit slightly more equatorial + closer, and lift the stack vs hero offsets.
+       */
+      const off = camera.position.clone().sub(controls.target);
+      const sph = new THREE.Spherical().setFromVector3(off);
+      sph.phi = THREE.MathUtils.clamp(
+        sph.phi + THREE.MathUtils.degToRad(7),
+        controls.minPolarAngle + 0.02,
+        controls.maxPolarAngle - 0.02
+      );
+      sph.radius = THREE.MathUtils.clamp(sph.radius * 0.93, controls.minDistance + 0.02, controls.maxDistance - 0.02);
+      camera.position.setFromSpherical(sph).add(controls.target);
+      camera.lookAt(controls.target);
+      controls.update();
+    }
+  } else {
+    applyHeroSceneCameraState(camera, controls, matGroup, isAdjustMode);
   }
   hero3dRoot.add(matGroup);
 
@@ -1294,12 +1426,12 @@ function startScene(container, canvas, options = {}) {
       saveLockedView() {
         const p = captureViewPreset(camera, controls, matGroup);
         localStorage.setItem(VIEW_PRESET_STORAGE_KEY, JSON.stringify(p));
-        persistZoomPreset(p.distance, controls);
+        persistZoomPreset(p.distance, controls, VIEW_PRESET_STORAGE_KEY);
         console.info('[magnamat] View saved to localStorage. Publish with CMS → Site & metadata → Hero 3D camera (paste JSON from __magnamatScene.copyJsonForCms()).');
         return p;
       },
       saveDefaultZoom() {
-        persistZoomPreset(orbitDistance(camera, controls), controls);
+        persistZoomPreset(orbitDistance(camera, controls), controls, VIEW_PRESET_STORAGE_KEY);
         console.info('[magnamat] Default zoom saved to localStorage key magnamat-default-zoom.');
         return orbitDistance(camera, controls);
       },
@@ -1352,9 +1484,86 @@ function startScene(container, canvas, options = {}) {
       },
     };
     console.info(
-      '[magnamat] Quick tune: ?adjust=1 panel — or __magnamatScene.saveLockedView() / saveDefaultZoom() / copyJsonForCms() / logDefaultAngle()'
+      '[magnamat] Quick tune: ?adjust=1 or ?adjustHero=1 — panel — or __magnamatScene.saveLockedView() / saveDefaultZoom() / copyJsonForCms() / logDefaultAngle()'
     );
-    installViewTuner(container, { camera, controls, matGroup, isAdjustMode });
+    installViewTuner(container, { camera, controls, matGroup, isAdjustMode, tunerKind: 'hero' });
+  }
+
+  if (typeof window !== 'undefined' && isSecondary && isAdjustMode) {
+    window.__magnamatSceneFeatures = {
+      camera,
+      controls,
+      matGroup,
+      saveLockedView() {
+        const p = captureViewPreset(camera, controls, matGroup);
+        localStorage.setItem(FEATURES_VIEW_PRESET_STORAGE_KEY, JSON.stringify(p));
+        persistZoomPreset(p.distance, controls, FEATURES_VIEW_PRESET_STORAGE_KEY);
+        console.info('[magnamat] Features 3D view saved to localStorage key magnamat-view-preset-features.');
+        return p;
+      },
+      saveDefaultZoom() {
+        persistZoomPreset(orbitDistance(camera, controls), controls, FEATURES_VIEW_PRESET_STORAGE_KEY);
+        console.info('[magnamat] Default zoom saved (syncs features preset if present).');
+        return orbitDistance(camera, controls);
+      },
+      clearLockedView() {
+        localStorage.removeItem(FEATURES_VIEW_PRESET_STORAGE_KEY);
+        console.info('[magnamat] Cleared features saved view. Reload to use default features framing.');
+      },
+      clearDefaultZoom() {
+        clearZoomPreset();
+        console.info('[magnamat] Cleared magnamat-default-zoom only.');
+      },
+      async copyJsonForCms() {
+        const text = JSON.stringify(captureViewPreset(camera, controls, matGroup), null, 2);
+        try {
+          await navigator.clipboard.writeText(text);
+          console.info('[magnamat] Features camera JSON copied — paste into Admin → Site & metadata → Features 3D camera.');
+        } catch {
+          console.log(text);
+        }
+        return text;
+      },
+      logDefaultAngle() {
+        const t = controls.target;
+        const p = camera.position;
+        const e = matGroup.rotation;
+        const f = (n) => Number(n).toFixed(5);
+        const cameraBlock = [
+          'const orbitTarget = new THREE.Vector3(' + `${f(t.x)}, ${f(t.y)}, ${f(t.z)}` + ');',
+          'controls.target.copy(orbitTarget);',
+          'camera.position.set(' + `${f(p.x)}, ${f(p.y)}, ${f(p.z)}` + ');',
+          'camera.lookAt(orbitTarget);',
+          'controls.update();',
+        ].join('\n');
+        const rotBlock = [
+          "matGroup.rotation.order = 'YXZ';",
+          'matGroup.rotation.y = ' + f(e.y) + ';',
+          'matGroup.rotation.x = ' + f(e.x) + ';',
+          'matGroup.rotation.z = ' + f(e.z) + ';',
+        ].join('\n');
+        const full = `// —— Features 3D camera (CMS: Site & metadata → Features 3D camera)\n${cameraBlock}\n\n// —— Mat rotation:\n${rotBlock}`;
+        console.log('%c[magnamat] Features 3D preset:\n', 'font-weight:bold;color:#0a7;', full);
+        if (navigator.clipboard?.writeText) {
+          navigator.clipboard.writeText(full).then(
+            () => console.log('%cCopied to clipboard.', 'color:#0a7;'),
+            () => console.warn('Clipboard copy failed; select the log above.')
+          );
+        }
+        return full;
+      },
+    };
+    console.info(
+      '[magnamat] Features 3D tune: ?adjustFeatures=1 — __magnamatSceneFeatures.saveLockedView() / copyJsonForCms() / logDefaultAngle()'
+    );
+    installViewTuner(container, {
+      camera,
+      controls,
+      matGroup,
+      isAdjustMode,
+      tunerKind: 'features',
+      presetStorageKey: FEATURES_VIEW_PRESET_STORAGE_KEY,
+    });
   }
 
   if (isSecondary) {
@@ -1665,86 +1874,6 @@ function bootMatScroll() {
   requestAnimationFrame(waitLayout);
 }
 
-function smoothstep01(t) {
-  const x = Math.max(0, Math.min(1, t));
-  return x * x * (3 - 2 * x);
-}
-
-/** Scroll through features headline slot → grow clip, fade second mat, ease three cards downward */
-function setupFeatures3dReveal() {
-  const bridge = document.getElementById('features-3d-reveal');
-  const inner = bridge?.querySelector('.features-3d-reveal__host');
-  const cards = document.querySelector('.js-features-cards-shift');
-  if (!bridge || !inner) return;
-
-  const reduceMotion =
-    typeof window !== 'undefined' &&
-    window.matchMedia &&
-    window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-
-  let shown = 0;
-
-  /** Match bridge open distance to the fixed canvas box (hero-canvas-h clamp), not an arbitrary cap */
-  function bridgeRevealHeightPx() {
-    const box = document.getElementById('canvas-container-scroll');
-    if (!box) return 320;
-    const h = box.offsetHeight;
-    if (h >= 80) return Math.round(h);
-    const vh = window.innerHeight || 700;
-    return Math.round(Math.min(560, Math.max(220, vh * 0.38)));
-  }
-
-  function scrollTarget01() {
-    if (reduceMotion) return 0;
-    const vh = window.innerHeight || 1;
-    const top = bridge.getBoundingClientRect().top;
-    const navEl = document.querySelector('.site-nav');
-    const navH = navEl ? Math.ceil(navEl.getBoundingClientRect().height) : 66;
-    /* Fully open (1) when the slot reaches the top under the nav — not after it scrolls past */
-    const openTop = navH + 2;
-    const denom = Math.max(80, vh - openTop);
-    const u = (vh - top) / denom;
-    return smoothstep01(Math.max(0, Math.min(1, u)));
-  }
-
-  let bridgeRaf = 0;
-  let bridgeAlive = true;
-  function tickBridge() {
-    if (!bridgeAlive) return;
-    bridgeRaf = requestAnimationFrame(tickBridge);
-    const target = scrollTarget01();
-    /* Slightly snappier so height/opacity track “fully open at top” without visible lag */
-    const ease = reduceMotion ? 1 : 0.14;
-    shown += (target - shown) * ease;
-    if (Math.abs(target - shown) < 0.00015) shown = target;
-
-    const hReveal = bridgeRevealHeightPx();
-    const h = shown * hReveal;
-    bridge.style.height = `${h}px`;
-
-    /* Fade in once the clip is tall enough to read the mat (not while squashed in first few px) */
-    const fadeStart = 0.18;
-    const opFade = smoothstep01(Math.max(0, (shown - fadeStart) / (1 - fadeStart)));
-
-    if (inner) {
-      inner.style.opacity = String(opFade);
-      inner.style.pointerEvents = opFade < 0.04 ? 'none' : 'auto';
-      inner.style.transform = `translate3d(0, ${(1 - opFade) * 12}px, 0)`;
-    }
-
-    const slidePx = 44;
-    if (cards) cards.style.transform = `translate3d(0, ${shown * slidePx}px, 0)`;
-  }
-
-  __g.__MAGNAMAT_DISPOSE_BRIDGE?.();
-  __g.__MAGNAMAT_DISPOSE_BRIDGE = () => {
-    bridgeAlive = false;
-    if (bridgeRaf) cancelAnimationFrame(bridgeRaf);
-    bridgeRaf = 0;
-  };
-  bridgeRaf = requestAnimationFrame(tickBridge);
-}
-
 function bootAllMat() {
   disposeMarketingMatScenes();
   /* View-mode strip: works even when secondary WebGL is skipped (e.g. reduced motion). */
@@ -1753,11 +1882,9 @@ function bootAllMat() {
   syncFeaturesViewModeToolbarActive(vm);
   syncFeaturesViewModeCaption(vm);
   bootMat();
-  /* Boot with hero-sized box even while clip height is 0 — reveal is overflow clip */
   if (!window.matchMedia || !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
     bootMatScroll();
   }
-  setupFeatures3dReveal();
 }
 
 /** Call once from a client component after the marketing DOM is mounted (Next.js). */

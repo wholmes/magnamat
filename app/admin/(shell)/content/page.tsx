@@ -16,7 +16,8 @@ export default async function AdminMarketingContentPage() {
         Hero, features, specs, compatibility, and footer — one JSON document (
         <code style={{ fontSize: 12 }}>MarketingPageContent</code> in{' '}
         <code style={{ fontSize: 12 }}>lib/cms/marketing-content.ts</code>). Unknown keys are ignored; missing keys use
-        defaults.
+        defaults. Set <code style={{ fontSize: 12 }}>hero.marqueeScroll</code> to <code style={{ fontSize: 12 }}>false</code>{' '}
+        to stop the hero ticker animation (otherwise omit or use <code style={{ fontSize: 12 }}>true</code>).
       </p>
       <div
         style={{

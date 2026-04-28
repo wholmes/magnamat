@@ -4,6 +4,7 @@ import { useActionState } from 'react';
 
 import type { SaveState } from '@/app/admin/actions';
 import { saveSeoSettings, saveSiteChrome, saveSiteSettings } from '@/app/admin/actions';
+import { FeaturesSceneCameraForm } from '@/components/admin/features-scene-camera-form';
 import { HeroSceneCameraForm } from '@/components/admin/hero-scene-camera-form';
 import { PromoModalRulesDialog } from '@/components/admin/promo-modal-rules-dialog';
 import { DEFAULT_CHROME, DEFAULT_SEO, DEFAULT_SITE_SETTINGS } from '@/lib/cms/defaults';
@@ -18,6 +19,7 @@ type Props = {
   seoDescription: string;
   seoNoIndex: boolean;
   heroSceneJson: string;
+  featuresSceneJson: string;
   /** True when at least one Prisma read failed (e.g. column/table missing vs schema). */
   dbReadHadError?: boolean;
 };
@@ -31,6 +33,7 @@ export function CmsDashboard({
   seoDescription,
   seoNoIndex,
   heroSceneJson,
+  featuresSceneJson,
   dbReadHadError,
 }: Props) {
   const [chromeState, chromeAction, chromePending] = useActionState(saveSiteChrome, undefined as SaveState | undefined);
@@ -263,6 +266,24 @@ export function CmsDashboard({
       >
         <h2 style={{ fontSize: '1.05rem', fontWeight: 700, marginBottom: 12 }}>Hero 3D camera (JSON)</h2>
         <HeroSceneCameraForm initialJson={heroSceneJson} />
+      </section>
+
+      <section
+        style={{
+          background: '#fff',
+          borderRadius: 12,
+          border: '1px solid #e4e4e7',
+          padding: 24,
+          boxShadow: '0 1px 2px rgba(0,0,0,0.04)',
+        }}
+      >
+        <h2 style={{ fontSize: '1.05rem', fontWeight: 700, marginBottom: 12 }}>Features 3D camera (JSON)</h2>
+        <p style={{ fontSize: 13, color: '#52525b', marginBottom: 12, lineHeight: 1.55 }}>
+          Built different column (<code>#mat-canvas-scroll</code>). Same schema as hero; injected as{' '}
+          <code>#magnamat-features-scene-config</code> when saved. If this table is empty, visitors get the hero camera
+          preset plus an automatic framing nudge.
+        </p>
+        <FeaturesSceneCameraForm initialJson={featuresSceneJson} />
       </section>
     </div>
   );

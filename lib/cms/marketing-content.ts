@@ -24,6 +24,8 @@ export type HeroContent = {
   marquee: string;
   /** Second ticker: horizontal strip on the hero / features seam (below the tilted hero marquee). */
   marqueeStraight: string;
+  /** When false, hero ticker copy stays fixed (no horizontal scroll). Default true. */
+  marqueeScroll: boolean;
 };
 
 export type FeatureCardPins = {
@@ -124,6 +126,7 @@ export const DEFAULT_MARKETING_PAGE: MarketingPageContent = {
       'MAGNETIC MICRO-PIN MATRIX &nbsp;·&nbsp; FLEX STEEL SUBSTRATE &nbsp;·&nbsp; EUFY MAKER COMPATIBLE &nbsp;·&nbsp; 250+ CONTACT POINTS &nbsp;·&nbsp; 255°C RATED &nbsp;·&nbsp; PLA · PETG · ABS · TPU · ASA &nbsp;·&nbsp; 0.01mm TOLERANCE &nbsp;·&nbsp; 1,000+ CYCLE RATING &nbsp;·&nbsp; MAGNETIC MICRO-PIN MATRIX &nbsp;·&nbsp; FLEX STEEL SUBSTRATE &nbsp;·&nbsp; EUFY MAKER COMPATIBLE &nbsp;·&nbsp; 250+ CONTACT POINTS &nbsp;·&nbsp; 255°C RATED &nbsp;·&nbsp; PLA · PETG · ABS · TPU · ASA &nbsp;·&nbsp; 0.01mm TOLERANCE &nbsp;·&nbsp; 1,000+ CYCLE RATING &nbsp;·&nbsp;',
     marqueeStraight:
       'ENGINEERING-GRADE FLATNESS &nbsp;·&nbsp; FIELD-TESTED RELEASE &nbsp;·&nbsp; EUFY MAKER FITMENT &nbsp;·&nbsp; SHOP-FIRST WORKFLOW &nbsp;·&nbsp; REPEATABLE Z HEIGHT &nbsp;·&nbsp; NO AQUA NET / GLUE &nbsp;·&nbsp; COLD PLATE SAFE &nbsp;·&nbsp; ENGINEERING-GRADE FLATNESS &nbsp;·&nbsp; FIELD-TESTED RELEASE &nbsp;·&nbsp; EUFY MAKER FITMENT &nbsp;·&nbsp; SHOP-FIRST WORKFLOW &nbsp;·&nbsp; REPEATABLE Z HEIGHT &nbsp;·&nbsp; NO AQUA NET / GLUE &nbsp;·&nbsp; COLD PLATE SAFE &nbsp;·&nbsp;',
+    marqueeScroll: true,
   },
   features: {
     sectionLabel: '// 01 — Engineering',
@@ -211,6 +214,10 @@ function pickString(x: unknown, fallback: string): string {
   return typeof x === 'string' ? x : fallback;
 }
 
+function pickBoolean(x: unknown, fallback: boolean): boolean {
+  return typeof x === 'boolean' ? x : fallback;
+}
+
 function pickSegments(x: unknown, fallback: TextSegment[]): TextSegment[] {
   if (!Array.isArray(x) || x.length === 0) return fallback;
   const out: TextSegment[] = [];
@@ -268,6 +275,7 @@ function pickHero(p: unknown, d: HeroContent): HeroContent {
     canvasDragHint: pickString(o.canvasDragHint, d.canvasDragHint),
     marquee: pickString(o.marquee, d.marquee),
     marqueeStraight: pickString(o.marqueeStraight, d.marqueeStraight),
+    marqueeScroll: pickBoolean(o.marqueeScroll, d.marqueeScroll),
   };
 }
 

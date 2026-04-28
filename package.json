@@ -19,6 +19,7 @@
     "db:ensure-core-tables": "prisma db execute --schema prisma/schema.prisma --file prisma/sql/ensure_core_cms_tables.sql",
     "db:fix-seo-noindex": "prisma db execute --schema prisma/schema.prisma --file prisma/sql/add_seo_noindex.sql",
     "db:fix-hero-scene-camera": "prisma db execute --schema prisma/schema.prisma --file prisma/sql/ensure_core_cms_tables.sql",
+    "db:fix-features-scene-camera": "prisma db execute --schema prisma/schema.prisma --file prisma/sql/add_features_scene_camera_table.sql",
     "db:bootstrap-db": "npm run db:ensure-core-tables && npm run db:fix-seo-noindex && npm run db:seed",
     "db:migrate:deploy:local": "dotenv -e .env.docker -- prisma migrate deploy",
     "db:seed": "prisma db seed",

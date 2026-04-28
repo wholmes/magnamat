@@ -46,5 +46,13 @@ CREATE TABLE IF NOT EXISTS "HeroSceneCamera" (
     CONSTRAINT "HeroSceneCamera_pkey" PRIMARY KEY ("id")
 );
 
+CREATE TABLE IF NOT EXISTS "FeaturesSceneCamera" (
+    "id" TEXT NOT NULL DEFAULT 'default',
+    "configJson" TEXT NOT NULL,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "FeaturesSceneCamera_pkey" PRIMARY KEY ("id")
+);
+
 -- Older SeoSettings rows created before noIndex existed
 ALTER TABLE "SeoSettings" ADD COLUMN IF NOT EXISTS "noIndex" BOOLEAN NOT NULL DEFAULT false;
