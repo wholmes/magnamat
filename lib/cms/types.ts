@@ -44,6 +44,17 @@ export type PromoModalConfig = {
   rules: PromoModalRules;
 };
 
+/** Presets for the **features** WebGL jig (second canvas): printable top texture + UI label. */
+export type FeaturesPrintPreset = {
+  id: string;
+  /** Short control label (preset picker). */
+  label: string;
+  /** Optional line under the picker (e.g. “Curved mug · registration pegs”). */
+  caption?: string;
+  /** PNG/JPEG/WebP URL — site-root path (`/images/...`) or `https://`. */
+  topTextureUrl: string;
+};
+
 export type SiteChromeConfig = {
   navLinks: { label: string; href: string }[];
   /** YouTube video id for nav “As seen on YouTube” */
@@ -52,6 +63,11 @@ export type SiteChromeConfig = {
   commerce: CommerceConfig;
   /** Optional announcement modal — rules + copy; read by `components/promo-modal.tsx`. */
   promoModal: PromoModalConfig;
+  /**
+   * Features 3D jig — JSON list injected as `#magnamat-features-print-presets`.
+   * The **first** preset’s `topTextureUrl` (and caption) supplies the features **Mug** preview art (not the 3D model).
+   */
+  featuresPrintPresets: FeaturesPrintPreset[];
 };
 
 export type SiteSettingsDTO = {

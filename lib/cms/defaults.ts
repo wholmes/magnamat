@@ -1,4 +1,4 @@
-import type { PromoModalConfig, SeoSettingsDTO, SiteChromeConfig, SiteSettingsDTO } from './types';
+import type { FeaturesPrintPreset, PromoModalConfig, SeoSettingsDTO, SiteChromeConfig, SiteSettingsDTO } from './types';
 
 export const DEFAULT_COMMERCE: SiteChromeConfig['commerce'] = {
   checkoutUrl: '',
@@ -29,6 +29,34 @@ export const DEFAULT_PROMO_MODAL: PromoModalConfig = {
   },
 };
 
+/** Default jig demos — swap `topTextureUrl` in Admin → Site chrome for your own art. */
+export const DEFAULT_FEATURES_PRINT_PRESETS: FeaturesPrintPreset[] = [
+  {
+    id: 'flat',
+    label: 'Flat blank',
+    caption: 'Rigid panel · default Chicago demo art',
+    topTextureUrl: '/images/print-demo-chicago-bean.png',
+  },
+  {
+    id: 'mug',
+    label: 'Mug wrap',
+    caption: 'Curved substrate — swap texture for your mug wrap preview',
+    topTextureUrl: '/images/print-demo-chicago-bean.png',
+  },
+  {
+    id: 'apparel',
+    label: 'Apparel',
+    caption: 'Textile / DTF area — illustrate fabric jig footprint',
+    topTextureUrl: '/images/print-demo-chicago-bean.png',
+  },
+  {
+    id: 'canvas',
+    label: 'Canvas',
+    caption: 'Poster / canvas sheet on the magnetic jig',
+    topTextureUrl: '/images/print-demo-chicago-bean.png',
+  },
+];
+
 export const DEFAULT_CHROME: SiteChromeConfig = {
   navLinks: [
     { label: 'Features', href: '/features' },
@@ -38,6 +66,7 @@ export const DEFAULT_CHROME: SiteChromeConfig = {
   youtubeVideoId: 'M7lc1UVf-VE',
   commerce: DEFAULT_COMMERCE,
   promoModal: DEFAULT_PROMO_MODAL,
+  featuresPrintPresets: DEFAULT_FEATURES_PRINT_PRESETS,
 };
 
 export const DEFAULT_SITE_SETTINGS: SiteSettingsDTO = {

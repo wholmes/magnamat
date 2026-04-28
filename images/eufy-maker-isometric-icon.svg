@@ -1,0 +1,52 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100" height="100" role="img" aria-labelledby="eufy-icon-title">
+  <title id="eufy-icon-title">Eufy Maker — isometric line icon</title>
+  <defs>
+    <style>
+      .heavy { stroke: #111; stroke-width: 1.3; fill: none; stroke-linecap: square; stroke-linejoin: miter; }
+      .medium { stroke: #111; stroke-width: 0.9; fill: none; stroke-linecap: square; stroke-linejoin: miter; }
+      .light { stroke: #2a2a2a; stroke-width: 0.58; fill: none; stroke-linecap: square; stroke-linejoin: miter; }
+      .xlight { stroke: #666; stroke-width: 0.48; fill: none; stroke-dasharray: 2.2 1.5; stroke-linecap: butt; }
+      .dim { stroke: #888; stroke-width: 0.46; fill: none; }
+      .accent { stroke: #7a6a12; stroke-width: 0.55; fill: none; stroke-linecap: square; }
+    </style>
+  </defs>
+  <rect width="100" height="100" fill="#ffffff"/>
+  <!--
+    True isometric shell: front trapezoid (verticals parallel), top + right parallelograms,
+    left face optional as single edge. Coordinates closed so all edges meet.
+  -->
+  <polygon class="heavy" points="20,88 72,88 80,46 28,46"/>
+  <polygon class="heavy" points="28,46 80,46 70,32 18,32"/>
+  <polygon class="heavy" points="80,46 72,88 62,74 70,32"/>
+  <!-- Left face: only edges not shared with the front trapezoid -->
+  <line class="heavy" x1="18" y1="32" x2="10" y2="74"/>
+  <line class="heavy" x1="10" y1="74" x2="20" y2="88"/>
+  <!-- Lid / deck lines on top plane (parallel to rear skew) -->
+  <line class="light" x1="22" y1="36" x2="76" y2="36"/>
+  <line class="light" x1="24" y1="40" x2="78" y2="40"/>
+  <!-- Carriage rail pair -->
+  <line class="medium" x1="32" y1="34" x2="68" y2="34"/>
+  <line class="medium" x1="32" y1="37" x2="68" y2="37"/>
+  <!-- Chamber frame on front -->
+  <polygon class="medium" points="24,84 68,84 74,54 30,54"/>
+  <polygon class="xlight" points="26,81 66,81 71,56 32,56"/>
+  <!-- Bed: ruling lines only -->
+  <g class="dim">
+    <line x1="30" y1="76" x2="64" y2="76"/>
+    <line x1="31" y1="72" x2="65" y2="72"/>
+    <line x1="32" y1="68" x2="66" y2="68"/>
+  </g>
+  <!-- Two parts on bed: wireframe prisms -->
+  <polygon class="light" points="32,66 40,64 41,69 33,71"/>
+  <polygon class="light" points="32,66 33,71 31,70 30,65"/>
+  <polygon class="light" points="40,64 41,69 39,68 38,63"/>
+  <polygon class="light" points="46,64 54,62 55,67 47,69"/>
+  <polygon class="light" points="46,64 47,69 45,68 44,63"/>
+  <polygon class="light" points="54,62 55,67 53,66 52,61"/>
+  <!-- Registration corners (stroke-only, drafting accent) -->
+  <path class="accent" d="M30 74v3.2M30 74h2.8"/>
+  <path class="accent" d="M62 72v3.2M62 72h-2.8"/>
+  <path class="accent" d="M29.5 79.5h2.8M61.7 77.8h2.8"/>
+  <!-- Center construction line -->
+  <line class="dim" x1="50" y1="46" x2="50" y2="88"/>
+</svg>

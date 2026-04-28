@@ -41,6 +41,32 @@ async function main() {
             dismissStorageKey: 'promo-v1',
           },
         },
+        featuresPrintPresets: [
+          {
+            id: 'flat',
+            label: 'Flat blank',
+            caption: 'Rigid panel · default Chicago demo art',
+            topTextureUrl: '/images/print-demo-chicago-bean.png',
+          },
+          {
+            id: 'mug',
+            label: 'Mug wrap',
+            caption: 'Curved substrate — swap texture for your mug wrap preview',
+            topTextureUrl: '/images/print-demo-chicago-bean.png',
+          },
+          {
+            id: 'apparel',
+            label: 'Apparel',
+            caption: 'Textile / DTF area — illustrate fabric jig footprint',
+            topTextureUrl: '/images/print-demo-chicago-bean.png',
+          },
+          {
+            id: 'canvas',
+            label: 'Canvas',
+            caption: 'Poster / canvas sheet on the magnetic jig',
+            topTextureUrl: '/images/print-demo-chicago-bean.png',
+          },
+        ],
       }),
     },
     update: {},

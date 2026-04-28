@@ -7,17 +7,7 @@ type Props = { compat: CompatContent };
 
 export function CompatSection({ compat: c }: Props) {
   return (
-    <section
-      id="compat"
-      className="bg-grid"
-      style={{
-        padding: '110px 24px',
-        backgroundColor: 'var(--card)',
-        textAlign: 'center',
-        position: 'relative',
-        overflow: 'hidden',
-      }}
-    >
+    <section id="compat" className="compat-section">
       <div className="compat-rings" aria-hidden>
         <div className="ring" style={{ width: 700, height: 700, borderWidth: 1, borderColor: 'rgba(0,0,0,0.055)' }} />
         <div className="ring" style={{ width: 530, height: 530, borderWidth: 1, borderColor: 'rgba(0,0,0,0.07)' }} />
@@ -27,40 +17,40 @@ export function CompatSection({ compat: c }: Props) {
         <div className="compat-rings__burst" />
       </div>
 
-      <div style={{ maxWidth: 780, margin: '0 auto', position: 'relative', zIndex: 1 }}>
-        <div className="reveal">
-          <p className="sec-label" style={{ marginBottom: 26 }}>
-            {c.sectionLabel}
-          </p>
-          <HeadlineFromSegments
-            segments={c.headlineSegments}
-            className="font-display font-extrabold leading-none"
-            style={{ fontSize: 'clamp(2.8rem,6vw,5.5rem)', marginBottom: 36, color: 'var(--ink)' }}
-          />
-          <p
+      <div className="compat-slab bg-grid">
+        <div className="compat-slab__inner">
+          <div className="reveal">
+            <p className="sec-label" style={{ marginBottom: 22 }}>
+              {c.sectionLabel}
+            </p>
+            <HeadlineFromSegments
+              segments={c.headlineSegments}
+              className="font-display font-extrabold leading-none"
+              style={{ fontSize: 'clamp(2.8rem,6vw,5.5rem)', marginBottom: 28, color: 'var(--ink)' }}
+            />
+            <p
+              style={{
+                color: 'var(--ink-muted)',
+                fontSize: 16,
+                lineHeight: 1.75,
+                maxWidth: 'min(36em, 520px)',
+                margin: '0 auto 32px',
+              }}
+            >
+              {normalizeMultiline(c.body)}
+            </p>
+          </div>
+
+          <div
+            className="reveal compat-slab__badges"
             style={{
-              color: 'var(--ink-muted)',
-              fontSize: 16,
-              lineHeight: 1.75,
-              maxWidth: 'min(36em, 520px)',
-              margin: '0 auto 44px',
+              display: 'flex',
+              flexWrap: 'wrap',
+              justifyContent: 'center',
+              gap: 12,
+              transitionDelay: '0.15s',
             }}
           >
-            {normalizeMultiline(c.body)}
-          </p>
-        </div>
-
-        <div
-          className="reveal"
-          style={{
-            display: 'flex',
-            flexWrap: 'wrap',
-            justifyContent: 'center',
-            gap: 12,
-            marginBottom: 52,
-            transitionDelay: '0.15s',
-          }}
-        >
           {c.badges.map((b, i) => (
             <div key={`${b.label}-${i}`} className="compat-badge">
               {b.status === 'check' ? (
@@ -80,18 +70,19 @@ export function CompatSection({ compat: c }: Props) {
               </span>
             </div>
           ))}
-        </div>
+          </div>
 
-        <div className="reveal" style={{ transitionDelay: '0.3s' }}>
-          <button
-            type="button"
-            className="btn btn-primary js-add-to-cart"
-            data-product-id="magnamat-v1"
-            style={{ fontSize: 17, padding: '18px 52px' }}
-            aria-label={c.ctaAriaLabel}
-          >
-            {c.ctaText}
-          </button>
+          <div className="reveal compat-slab__cta" style={{ transitionDelay: '0.3s' }}>
+            <button
+              type="button"
+              className="btn btn-primary js-add-to-cart"
+              data-product-id="magnamat-v1"
+              style={{ fontSize: 17, padding: '18px 52px' }}
+              aria-label={c.ctaAriaLabel}
+            >
+              {c.ctaText}
+            </button>
+          </div>
         </div>
       </div>
     </section>

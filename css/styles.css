@@ -201,6 +201,67 @@ body::after {
   z-index: 2;
 }
 
+/* Specs — Eufy Make E1 line drawing as soft watermark (SVG has white plate; multiply drops it out) */
+.specs-section__eufy-bg {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background-image: url('/images/eufy_make_e1_cad.svg');
+  background-repeat: no-repeat;
+  background-position: center center;
+  /* `contain` keeps every label/dimension in view; `cover` was cropping the edges off */
+  background-size: contain;
+  opacity: 0.055;
+  mix-blend-mode: multiply;
+}
+@media (min-width: 1024px) {
+  .specs-section__eufy-bg {
+    opacity: 0.07;
+  }
+}
+.specs-section__inner {
+  position: relative;
+  z-index: 2;
+}
+
+/* Features: WebGL left, section headline right (stacks headline-first on narrow viewports) */
+.features-hero-split {
+  display: grid;
+  gap: 28px 40px;
+  margin-bottom: 40px;
+  align-items: start;
+}
+.features-hero-split__visual {
+  min-width: 0;
+}
+.features-hero-split__intro {
+  min-width: 0;
+  max-width: 34rem;
+}
+@media (min-width: 1024px) {
+  .features-hero-split {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.08fr);
+    align-items: center;
+    gap: 36px 52px;
+  }
+  .features-hero-split__intro {
+    justify-self: end;
+    text-align: left;
+  }
+}
+@media (max-width: 1023px) {
+  .features-hero-split__intro {
+    order: -1;
+  }
+}
+.features-hero-split__visual .features-view-mode-wrap {
+  max-width: 100%;
+  margin-top: 18px;
+  margin-left: 0;
+  margin-right: 0;
+}
+
 /* Features slot: second WebGL clips open between headline and three cards */
 .features-3d-reveal {
   overflow: hidden;
@@ -221,6 +282,55 @@ body::after {
 }
 .features-3d-reveal__stage {
   min-height: 0;
+}
+
+.features-view-mode-wrap {
+  margin: 22px 0 28px;
+  max-width: min(42em, 640px);
+}
+
+.features-print-presets-wrap {
+  margin: 0 0 28px;
+  max-width: min(42em, 640px);
+}
+.features-print-presets {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+.features-print-presets__btn {
+  appearance: none;
+  border: 1px solid rgba(22, 22, 22, 0.14);
+  background: rgba(255, 255, 255, 0.55);
+  color: var(--ink);
+  font-family: var(--font-space-mono), monospace;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  padding: 8px 14px;
+  border-radius: 4px;
+  cursor: pointer;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.65);
+  transition: border-color 0.15s ease, background 0.15s ease, color 0.15s ease;
+}
+.features-print-presets__btn:hover {
+  border-color: rgba(22, 22, 22, 0.22);
+  background: rgba(255, 255, 255, 0.85);
+}
+.features-print-presets__btn--active {
+  border-color: rgba(59, 155, 229, 0.45);
+  background: rgba(59, 155, 229, 0.1);
+  color: #1a6cad;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.5), 0 0 0 1px rgba(59, 155, 229, 0.12);
+}
+.features-print-caption {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--ink-muted);
+  min-height: 1.5em;
 }
 
 /* CSS2D labels on secondary mat (Three.js) */
@@ -561,17 +671,18 @@ body::after {
   max-width: 1300px;
   margin-left: auto;
   margin-right: auto;
-  padding: 24px 16px 32px;
+  /* Tight under fixed nav — top was 24–48px and read as a large “air gap” above the hero / 3D */
+  padding: 10px 16px 32px;
   box-sizing: border-box;
 }
 @media (min-width: 640px) {
   .hero-main-inner {
-    padding: 32px 24px 40px;
+    padding: 12px 24px 40px;
   }
 }
 @media (min-width: 1024px) {
   .hero-main-inner {
-    padding: 48px 24px;
+    padding: 12px 24px 48px;
   }
 }
 
@@ -585,7 +696,8 @@ body::after {
 @media (min-width: 1024px) {
   .hero-layout-grid {
     grid-template-columns: 1fr 1fr;
-    align-items: center;
+    /* start: avoids centering the short product column — removes empty band above the 3D */
+    align-items: start;
   }
 }
 .hero-layout-grid > * {
@@ -668,6 +780,58 @@ body::after {
   -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
 }
 
+/* Compat: gray field (matches specs) + shorter white slab so rings read past the slab top/bottom */
+.compat-section {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  background-color: var(--page);
+  overflow: visible;
+  padding: clamp(40px, 8vw, 100px) 24px;
+  min-height: clamp(560px, 88vw, 800px);
+}
+@keyframes compat-sign-swing {
+  0%,
+  100% {
+    transform: rotate(-2.25deg);
+  }
+  50% {
+    transform: rotate(2.25deg);
+  }
+}
+.compat-slab {
+  position: relative;
+  z-index: 2;
+  flex: 0 1 auto;
+  width: 100%;
+  max-width: min(920px, 100%);
+  margin-left: auto;
+  margin-right: auto;
+  background-color: var(--card);
+  border: 1px solid var(--border-strong);
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.75) inset,
+    0 12px 40px rgba(22, 22, 22, 0.04);
+  padding: clamp(22px, 3.8vw, 36px) clamp(18px, 3vw, 28px);
+  transform-origin: 50% 0;
+  animation: compat-sign-swing 4.8s ease-in-out infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .compat-slab {
+    animation: none;
+  }
+}
+.compat-slab__inner {
+  max-width: 780px;
+  margin: 0 auto;
+  position: relative;
+}
+.compat-slab__badges {
+  margin-bottom: clamp(28px, 5vw, 40px);
+}
+
 /* Concentric ring decoration — compat “target” */
 .compat-rings {
   position: absolute;
@@ -699,11 +863,11 @@ body::after {
   background: radial-gradient(
     circle at 50% 50%,
     #ffffff 0%,
-    #ffffff 18%,
-    rgba(255, 255, 255, 0.92) 34%,
-    rgba(255, 255, 255, 0.55) 52%,
-    rgba(255, 255, 255, 0.18) 72%,
-    rgba(255, 255, 255, 0) 90%
+    #ffffff 14%,
+    rgba(255, 255, 255, 0.88) 30%,
+    rgba(255, 255, 255, 0.42) 50%,
+    rgba(255, 255, 255, 0.12) 68%,
+    rgba(255, 255, 255, 0) 86%
   );
   pointer-events: none;
 }

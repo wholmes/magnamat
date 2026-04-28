@@ -1,6 +1,12 @@
-import { DEFAULT_CHROME, DEFAULT_COMMERCE, DEFAULT_PROMO_MODAL } from './defaults';
+import { DEFAULT_CHROME, DEFAULT_COMMERCE, DEFAULT_FEATURES_PRINT_PRESETS, DEFAULT_PROMO_MODAL } from './defaults';
 import { sanitizeCouponArray } from './promo-modal-coupons';
-import type { CommerceConfig, CommerceProduct, PromoModalConfig, SiteChromeConfig } from './types';
+import type {
+  CommerceConfig,
+  CommerceProduct,
+  FeaturesPrintPreset,
+  PromoModalConfig,
+  SiteChromeConfig,
+} from './types';
 
 function mergeCommerce(raw: unknown): CommerceConfig {
   if (!raw || typeof raw !== 'object') return DEFAULT_COMMERCE;
@@ -29,6 +35,35 @@ function mergeCommerce(raw: unknown): CommerceConfig {
   }
   if (products.length === 0) return { ...DEFAULT_COMMERCE, checkoutUrl };
   return { checkoutUrl, products };
+}
+
+function isValidFeatureTextureUrl(s: string): boolean {
+  const t = s.trim();
+  if (!t || t.length > 512) return false;
+  if (t.startsWith('/')) return true;
+  try {
+    const u = new URL(t);
+    return (u.protocol === 'https:' || u.protocol === 'http:') && u.hostname.length > 0;
+  } catch {
+    return false;
+  }
+}
+
+function mergeFeaturesPrintPresets(raw: unknown): FeaturesPrintPreset[] {
+  if (!Array.isArray(raw) || raw.length === 0) return [...DEFAULT_FEATURES_PRINT_PRESETS];
+  const out: FeaturesPrintPreset[] = [];
+  for (const item of raw) {
+    if (!item || typeof item !== 'object') continue;
+    const p = item as Record<string, unknown>;
+    const id = typeof p.id === 'string' ? p.id.trim().slice(0, 64) : '';
+    const label = typeof p.label === 'string' ? p.label.trim().slice(0, 80) : '';
+    const topTextureUrl = typeof p.topTextureUrl === 'string' ? p.topTextureUrl.trim() : '';
+    if (!id || !label || !isValidFeatureTextureUrl(topTextureUrl)) continue;
+    const caption =
+      typeof p.caption === 'string' && p.caption.trim() ? p.caption.trim().slice(0, 220) : undefined;
+    out.push({ id, label, caption, topTextureUrl });
+  }
+  return out.length > 0 ? out : [...DEFAULT_FEATURES_PRINT_PRESETS];
 }
 
 function mergePromoModal(raw: unknown): PromoModalConfig {
@@ -79,6 +114,7 @@ export function parseChromeConfig(json: string): SiteChromeConfig {
         youtubeVideoId: typeof v.youtubeVideoId === 'string' ? v.youtubeVideoId : DEFAULT_CHROME.youtubeVideoId,
         commerce: mergeCommerce(v.commerce),
         promoModal: mergePromoModal(v.promoModal),
+        featuresPrintPresets: mergeFeaturesPrintPresets(v.featuresPrintPresets),
       };
     }
   } catch {
@@ -148,6 +184,18 @@ function isStrictChromeConfig(o: unknown): o is SiteChromeConfig {
   if (x.youtubeVideoId !== undefined && typeof x.youtubeVideoId !== 'string') return false;
   if (x.commerce !== undefined && !isValidCommerce(x.commerce)) return false;
   if (x.promoModal !== undefined && !isValidPromoModal(x.promoModal)) return false;
+  if (x.featuresPrintPresets !== undefined) {
+    if (!Array.isArray(x.featuresPrintPresets)) return false;
+    if (x.featuresPrintPresets.length > 16) return false;
+    for (const item of x.featuresPrintPresets) {
+      if (!item || typeof item !== 'object') return false;
+      const p = item as Record<string, unknown>;
+      if (typeof p.id !== 'string' || !p.id.trim()) return false;
+      if (typeof p.label !== 'string' || !p.label.trim()) return false;
+      if (typeof p.topTextureUrl !== 'string' || !isValidFeatureTextureUrl(p.topTextureUrl)) return false;
+      if (p.caption !== undefined && typeof p.caption !== 'string') return false;
+    }
+  }
   return true;
 }
 
@@ -163,14 +211,15 @@ export function validateChromeJsonString(raw: string): { ok: true; normalized: s
     return {
       ok: false,
       error:
-        'Expected { "navLinks": [...], "youtubeVideoId": "…", "commerce": { ... }, "promoModal"?: { "enabled", "title", "body", "primaryCtaLabel", "primaryCtaHref", "dismissLabel", "rules": { "minLifetimeVisits", "minScrollY", "pathScope": "home"|"any", "dismissStorageKey" } } }.',
+        'Expected { "navLinks": [...], "youtubeVideoId": "…", "commerce": { ... }, "promoModal"?: { ... }, "featuresPrintPresets"?: [ { "id", "label", "topTextureUrl" (path or https URL), "caption"? } ] }.',
     };
   }
   const normalized: SiteChromeConfig = {
     navLinks: o.navLinks,
     youtubeVideoId: o.youtubeVideoId ?? DEFAULT_CHROME.youtubeVideoId,
-    commerce: o.commerce != null && isValidCommerce(o.commerce) ? (o.commerce as CommerceConfig) : DEFAULT_COMMERCE,
-    promoModal: mergePromoModal((o as Record<string, unknown>).promoModal),
+    commerce: o.commerce != null && isValidCommerce(o.commerce) ? o.commerce : DEFAULT_COMMERCE,
+    promoModal: mergePromoModal(o.promoModal),
+    featuresPrintPresets: mergeFeaturesPrintPresets(o.featuresPrintPresets),
   };
   return { ok: true, normalized: JSON.stringify(normalized, null, 2) };
 }

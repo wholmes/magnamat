@@ -2,7 +2,7 @@
 
 import { useEffect } from 'react';
 
-import { bootMarketingMatRuntime } from '@/lib/mat-scene';
+import { bootMarketingMatRuntime, teardownMarketingMatClient } from '@/lib/mat-scene';
 
 /**
  * Loads legacy side-effect modules (nav paths, cart, YouTube) and boots Three.js after paint.
@@ -14,6 +14,9 @@ export function ClientRuntime() {
     void import('@/lib/yt-lightbox');
     void import('@/lib/cart');
     bootMarketingMatRuntime();
+    return () => {
+      teardownMarketingMatClient();
+    };
   }, []);
   return null;
 }

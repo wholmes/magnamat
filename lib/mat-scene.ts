@@ -8,9 +8,157 @@ import {
   heroSceneCameraFromUnknown,
   parseHeroSceneCameraFromJson,
 } from './cms/hero-scene-camera';
+import { DEFAULT_FEATURES_PRINT_PRESETS } from './cms/defaults';
+
+const __g =
+  typeof globalThis !== 'undefined'
+    ? globalThis
+    : typeof window !== 'undefined'
+      ? window
+      : {};
+
+/** Tear down WebGL + rAF from a prior `mat-scene` eval (Fast Refresh resets module lets but leaves GPU/loops running). */
+export function teardownMarketingMatClient() {
+  disposeMarketingMatScenes();
+  __g.__MAGNAMAT_RUNTIME_ENTRY = false;
+}
+
+export function disposeMarketingMatScenes() {
+  try {
+    __g.__MAGNAMAT_DISPOSE_HERO?.();
+  } catch (_) {}
+  try {
+    __g.__MAGNAMAT_DISPOSE_SCROLL?.();
+  } catch (_) {}
+  try {
+    __g.__MAGNAMAT_DISPOSE_BRIDGE?.();
+  } catch (_) {}
+  __g.__MAGNAMAT_DISPOSE_HERO = null;
+  __g.__MAGNAMAT_DISPOSE_SCROLL = null;
+  __g.__MAGNAMAT_DISPOSE_BRIDGE = null;
+  try {
+    delete __g.__magnamatScene;
+  } catch (_) {
+    __g.__magnamatScene = undefined;
+  }
+  if (__g.__MAGNAMAT_FEATURES_VIEW_MODE_CLICK) {
+    try {
+      document.removeEventListener('click', __g.__MAGNAMAT_FEATURES_VIEW_MODE_CLICK, false);
+    } catch (_) {}
+    __g.__MAGNAMAT_FEATURES_VIEW_MODE_CLICK = null;
+  }
+  featuresViewModeDomDelegated = false;
+}
+
+function readFeaturesPrintPresetsFromDom() {
+  if (typeof document === 'undefined') return DEFAULT_FEATURES_PRINT_PRESETS;
+  const el = document.getElementById('magnamat-features-print-presets');
+  if (!el || !el.textContent) return DEFAULT_FEATURES_PRINT_PRESETS;
+  try {
+    const v = JSON.parse(el.textContent) as unknown;
+    if (!Array.isArray(v) || v.length === 0) return DEFAULT_FEATURES_PRINT_PRESETS;
+    const out = [];
+    for (const item of v) {
+      if (!item || typeof item !== 'object') continue;
+      const p = item;
+      const id = typeof p.id === 'string' ? p.id.trim() : '';
+      const label = typeof p.label === 'string' ? p.label.trim() : '';
+      const topTextureUrl = typeof p.topTextureUrl === 'string' ? p.topTextureUrl.trim() : '';
+      if (!id || !label || !topTextureUrl) continue;
+      const caption = typeof p.caption === 'string' && p.caption.trim() ? p.caption.trim() : undefined;
+      out.push({ id, label, caption, topTextureUrl });
+    }
+    return out.length > 0 ? out : DEFAULT_FEATURES_PRINT_PRESETS;
+  } catch {
+    return DEFAULT_FEATURES_PRINT_PRESETS;
+  }
+}
+
+const FEATURES_VIEW_MODE_KEY = 'magnamat-features-view-mode';
+const LEGACY_FEATURES_SUBSTRATE_KEY = 'magnamat-features-substrate';
+
+let featuresViewModeDomDelegated = false;
+
+function readFeaturesViewMode() {
+  if (typeof window === 'undefined') return 'mug';
+  try {
+    const v = localStorage.getItem(FEATURES_VIEW_MODE_KEY);
+    if (v === 'skyscraper' || v === 'coaster') return 'skyscraper';
+    if (v === 'mug' || v === 'plain' || v === 'original') return 'mug';
+    const leg = localStorage.getItem(LEGACY_FEATURES_SUBSTRATE_KEY);
+    if (leg === 'coaster') return 'skyscraper';
+    if (leg === 'mug') return 'mug';
+  } catch (_) {}
+  return 'mug';
+}
+
+function syncFeaturesViewModeToolbarActive(mode) {
+  if (typeof document === 'undefined') return;
+  const m = mode === 'skyscraper' ? 'skyscraper' : 'mug';
+  document.querySelectorAll('#features [data-features-view-mode]').forEach((node) => {
+    if (!(node instanceof HTMLElement)) return;
+    const v = node.getAttribute('data-features-view-mode');
+    node.classList.toggle('features-print-presets__btn--active', v === m);
+  });
+}
+
+function syncFeaturesViewModeCaption(mode) {
+  const cap = document.getElementById('features-view-caption');
+  if (!cap) return;
+  const presets = readFeaturesPrintPresetsFromDom();
+  const p0 = presets[0];
+  if (mode === 'skyscraper') {
+    cap.textContent =
+      '3D-printed model — solid material, no image map (Site chrome art is only used for the mug preview).';
+  } else {
+    cap.textContent = p0?.caption ? `Mug · ${p0.caption}` : 'Mug wrap · demo art from first chrome preset.';
+  }
+}
+
+function rebootFeaturesSecondaryWebgl() {
+  if (typeof window === 'undefined') return;
+  if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  try {
+    __g.__MAGNAMAT_DISPOSE_SCROLL?.();
+  } catch (_) {}
+  __g.__MAGNAMAT_DISPOSE_SCROLL = null;
+  bootMatScroll();
+}
+
+function onFeaturesViewModeDocumentClick(e) {
+  const el = clickTargetElement(e);
+  if (!el) return;
+  const btn = el.closest('[data-features-view-mode]');
+  if (!btn || !document.getElementById('features')?.contains(btn)) return;
+  const raw = btn.getAttribute('data-features-view-mode');
+  const mode = raw === 'skyscraper' ? 'skyscraper' : 'mug';
+  try {
+    localStorage.setItem(FEATURES_VIEW_MODE_KEY, mode);
+  } catch (_) {}
+  syncFeaturesViewModeToolbarActive(mode);
+  syncFeaturesViewModeCaption(mode);
+  rebootFeaturesSecondaryWebgl();
+}
+
+function ensureFeaturesViewModeClickDelegated() {
+  if (featuresViewModeDomDelegated) return;
+  if (typeof document === 'undefined') return;
+  featuresViewModeDomDelegated = true;
+  __g.__MAGNAMAT_FEATURES_VIEW_MODE_CLICK = onFeaturesViewModeDocumentClick;
+  document.addEventListener('click', __g.__MAGNAMAT_FEATURES_VIEW_MODE_CLICK, false);
+}
+
+function clickTargetElement(ev) {
+  const t = ev.target;
+  if (t instanceof Element) return t;
+  if (t && typeof Node !== 'undefined' && t.nodeType === 3 && t.parentElement) return t.parentElement;
+  return null;
+}
 
 /* ── Scroll reveal: IO + sync pass so above-the-fold blocks are not stuck at opacity 0 ── */
 function setupReveal() {
+  if (__g.__MAGNAMAT_SETUP_REVEAL) return;
+  __g.__MAGNAMAT_SETUP_REVEAL = true;
   if (typeof window === 'undefined' || typeof IntersectionObserver === 'undefined') return;
   const revealObs = new IntersectionObserver(
     (entries) => {
@@ -34,6 +182,36 @@ function setupReveal() {
 }
 
 /* ── Mat WebGL ── */
+/**
+ * After `WebGLRenderer.dispose()` + `forceContextLoss()`, the same `<canvas>` often cannot
+ * acquire a new WebGL context; `new WebGLRenderer({ canvas })` then throws (e.g. null `precision`).
+ */
+function refreshMatCanvasHeroElement() {
+  const existing = document.getElementById('mat-canvas');
+  if (!existing?.parentNode) return null;
+  const next = document.createElement('canvas');
+  next.id = 'mat-canvas';
+  next.setAttribute('role', 'img');
+  next.tabIndex = 0;
+  const label = existing.getAttribute('aria-label');
+  if (label) next.setAttribute('aria-label', label);
+  existing.classList.forEach((c) => next.classList.add(c));
+  existing.replaceWith(next);
+  return next;
+}
+
+function refreshMatCanvasScrollElement() {
+  const existing = document.getElementById('mat-canvas-scroll');
+  if (!existing?.parentNode) return null;
+  const next = document.createElement('canvas');
+  next.id = 'mat-canvas-scroll';
+  next.setAttribute('aria-hidden', 'true');
+  next.tabIndex = -1;
+  existing.classList.forEach((c) => next.classList.add(c));
+  existing.replaceWith(next);
+  return next;
+}
+
 function readCanvasSize(container) {
   const r = container.getBoundingClientRect();
   const w = Math.floor(r.width);
@@ -366,6 +544,222 @@ function touchPrimaryOrNarrowForOrbit() {
   return false;
 }
 
+/** Linear scale for features-section mug (must match `getMugBarbPositionsXZ`). */
+const SIDE_MUG_SCALE = 2.9;
+/**
+ * Linear scale for features-section skyscraper (`getSkyscraperBarbPositionsXZ` uses the same footprint).
+ * Width / depth / height factors are multiplied by this in `createSkyscraperInJig`.
+ */
+const SIDE_SKYSCRAPER_SCALE = 4.2;
+const SKY_TOWER_W = 0.2;
+const SKY_TOWER_D = 0.09;
+const SKY_TOWER_H = 0.56;
+const SKY_CROWN_H = 0.07;
+
+/**
+ * Eight barb (registration peg) positions in jigRoot XZ — **tight** to the scaled mug.
+ * Hero uses fixed hw/hd + barbInset; those +0.055 / +0.085 edge offsets are for ~2×1.5 m blanks
+ * and were leaving the mug visually “unheld” if reused here.
+ */
+function getMugBarbPositionsXZ(scale) {
+  const s = scale;
+  const cupHalfX = (0.52 * s) / 2;
+  const radiusTop = 0.158 * s;
+  const radiusBot = 0.142 * s;
+  const rFoot = Math.max(radiusTop, radiusBot);
+  const handleRmaj = 0.092 * s;
+  const handleRmin = 0.023 * s;
+  const handleZ = radiusTop * 0.9;
+  const mugHalfZ = Math.max(rFoot, handleZ + handleRmaj + handleRmin);
+  const clearance = 0.026;
+  const bx = cupHalfX + clearance;
+  const bz = mugHalfZ + clearance;
+  const n = 0.014;
+  return [
+    [bx, bz],
+    [bx, -bz],
+    [-bx, bz],
+    [-bx, -bz],
+    [0, bz + n],
+    [0, -(bz + n)],
+    [-(bx + n), 0],
+    [bx + n, 0],
+  ];
+}
+
+/**
+ * Eight barb positions around the skyscraper footprint (XZ bounds of tower + crown).
+ */
+function getSkyscraperBarbPositionsXZ(scale) {
+  const s = scale;
+  const hx = (SKY_TOWER_W * s) / 2 + 0.02;
+  const hz = (SKY_TOWER_D * s) / 2 + 0.02;
+  const clearance = 0.028;
+  const bx = hx + clearance;
+  const bz = hz + clearance;
+  const n = 0.014;
+  return [
+    [bx, bz],
+    [bx, -bz],
+    [-bx, bz],
+    [-bx, -bz],
+    [0, bz + n],
+    [0, -(bz + n)],
+    [-(bx + n), 0],
+    [bx + n, 0],
+  ];
+}
+
+/**
+ * Features jig: simple skyscraper as a **3D-printed part** — uniform FDM-style plastic, no image map
+ * (contrast with mug / flat blank, which show wrap preview art).
+ */
+function createSkyscraperInJig() {
+  const group = new THREE.Group();
+  const s = SIDE_SKYSCRAPER_SCALE;
+  const w = SKY_TOWER_W * s;
+  const h = SKY_TOWER_H * s;
+  const d = SKY_TOWER_D * s;
+
+  const shellMat = new THREE.MeshStandardMaterial({
+    color: 0xd2d6dc,
+    roughness: 0.68,
+    metalness: 0.03,
+  });
+  const crownMat = new THREE.MeshStandardMaterial({
+    color: 0xa8b0bc,
+    roughness: 0.64,
+    metalness: 0.05,
+  });
+
+  const towerGeo = new THREE.BoxGeometry(w, h, d);
+  const tower = new THREE.Mesh(towerGeo, shellMat);
+  tower.castShadow = true;
+  tower.receiveShadow = true;
+  tower.position.y = h / 2 + 0.0005;
+  group.add(tower);
+
+  const crownH = SKY_CROWN_H * s;
+  const crownW = w * 0.68;
+  const crownD = d * 0.92;
+  const crownGeo = new THREE.BoxGeometry(crownW, crownH, crownD);
+  const crown = new THREE.Mesh(crownGeo, crownMat);
+  crown.position.y = h + crownH / 2 + 0.0002;
+  crown.castShadow = true;
+  crown.receiveShadow = true;
+  group.add(crown);
+
+  group.updateMatrixWorld(true);
+  const bbox = new THREE.Box3().setFromObject(group);
+  const lift = -bbox.min.y + 0.0005;
+  group.position.set(0, lift, 0);
+
+  return { group, shellMat };
+}
+
+/**
+ * Features jig: ceramic mug lying on its side (axis along X, opening toward +X).
+ * Print texture maps to the **outer** wall only (`printMat`); interior uses dark
+ * ceramic (open-ended outer + inner BackSide shell + inner caps — no wrap on the inside).
+ */
+function createMugOnSideInJig() {
+  const group = new THREE.Group();
+  const s = SIDE_MUG_SCALE;
+  const cupLen = 0.52 * s;
+  const radiusTop = 0.158 * s;
+  const radiusBot = 0.142 * s;
+  const wall = 0.016 * s;
+  const innerRadiusTop = Math.max(radiusTop - wall, 0.022 * s);
+  const innerRadiusBot = Math.max(radiusBot - wall, 0.02 * s);
+
+  const printMat = new THREE.MeshStandardMaterial({
+    color: 0xffffff,
+    roughness: 0.55,
+    metalness: 0.05,
+    side: THREE.FrontSide,
+  });
+  const ceramicMat = new THREE.MeshStandardMaterial({
+    color: 0xeaedf2,
+    roughness: 0.5,
+    metalness: 0.08,
+  });
+  const innerDarkMat = new THREE.MeshStandardMaterial({
+    color: 0x1a1512,
+    roughness: 0.92,
+    metalness: 0,
+  });
+  const innerWallMat = innerDarkMat.clone();
+  innerWallMat.side = THREE.BackSide;
+
+  /* Outer shell only — no end caps on this mesh so the wrap never appears on interior disks. */
+  const bodyGeom = new THREE.CylinderGeometry(radiusTop, radiusBot, cupLen, 48, 1, true);
+  bodyGeom.rotateZ(Math.PI / 2);
+  const body = new THREE.Mesh(bodyGeom, printMat);
+  body.castShadow = true;
+  body.receiveShadow = true;
+  group.add(body);
+
+  /* Inner wall: BackSide so it is visible from inside the cavity, culled from outside. */
+  const innerWallGeom = new THREE.CylinderGeometry(
+    innerRadiusTop,
+    innerRadiusBot,
+    cupLen * 0.998,
+    48,
+    1,
+    true
+  );
+  innerWallGeom.rotateZ(Math.PI / 2);
+  const innerWall = new THREE.Mesh(innerWallGeom, innerWallMat);
+  innerWall.castShadow = false;
+  innerWall.receiveShadow = true;
+  group.add(innerWall);
+
+  /* Closed bottom — ceramic outside, dark inside (same opening rim/inner as before). */
+  const bottomOuterGeom = new THREE.CircleGeometry(radiusTop, 48);
+  bottomOuterGeom.rotateY(-Math.PI / 2);
+  const bottomOuter = new THREE.Mesh(bottomOuterGeom, ceramicMat);
+  bottomOuter.position.set(-cupLen / 2 - 0.0005, 0, 0);
+  bottomOuter.castShadow = true;
+  group.add(bottomOuter);
+
+  const bottomInnerGeom = new THREE.CircleGeometry(innerRadiusTop * 0.98, 32);
+  bottomInnerGeom.rotateY(Math.PI / 2);
+  const bottomInner = new THREE.Mesh(bottomInnerGeom, innerDarkMat);
+  bottomInner.position.set(-cupLen / 2 + 0.0022, 0, 0);
+  bottomInner.receiveShadow = true;
+  group.add(bottomInner);
+
+  const rimGeom = new THREE.RingGeometry(radiusBot * 0.45, radiusTop * 0.998, 40);
+  rimGeom.rotateY(-Math.PI / 2);
+  const rim = new THREE.Mesh(rimGeom, ceramicMat);
+  rim.position.set(cupLen / 2 + 0.0008, 0, 0);
+  rim.castShadow = true;
+  group.add(rim);
+
+  const innerGeom = new THREE.CircleGeometry(radiusBot * 0.86, 32);
+  innerGeom.rotateY(-Math.PI / 2);
+  const inner = new THREE.Mesh(innerGeom, innerDarkMat);
+  inner.position.set(cupLen / 2 + 0.0024, 0, 0);
+  group.add(inner);
+
+  const handleGeom = new THREE.TorusGeometry(0.092 * s, 0.023 * s, 8, 26, Math.PI * 1.28);
+  const handle = new THREE.Mesh(handleGeom, ceramicMat);
+  handle.rotation.order = 'XYZ';
+  handle.rotation.x = Math.PI / 2;
+  handle.rotation.z = Math.PI * 0.2;
+  handle.position.set(-0.015 * s, -radiusBot * 0.32, radiusTop * 0.9);
+  handle.castShadow = true;
+  group.add(handle);
+
+  /* Seat on jig / insert pad: torus/handle can extend below cylinder — don’t guess from radius alone. */
+  group.updateMatrixWorld(true);
+  const mugBox = new THREE.Box3().setFromObject(group);
+  const lift = -mugBox.min.y + 0.0006;
+  group.position.set(0, lift, 0);
+
+  return { group, printMat };
+}
+
 /** Tuning mode: accept adjust=1 / true / yes (case-insensitive); optional hash e.g. #adjust=1 */
 function isAdjustModeFromUrl(isSecondary) {
   if (isSecondary || typeof window === 'undefined') return false;
@@ -385,12 +779,18 @@ function isAdjustModeFromUrl(isSecondary) {
 
 function startScene(container, canvas, options = {}) {
   const isSecondary = options.secondary === true;
+  const featuresViewMode = isSecondary ? readFeaturesViewMode() : 'mug';
   const isAdjustMode = isAdjustModeFromUrl(isSecondary);
 
   let { w: W, h: H } = readCanvasSize(container);
   if (W < 32 || H < 32) {
     W = Math.max(W, 640);
     H = Math.max(H, 400);
+  }
+
+  if (!(canvas instanceof HTMLCanvasElement) || !canvas.isConnected) {
+    showCanvasError(container, '3D canvas is not available. Try refreshing the page.');
+    return;
   }
 
   let renderer;
@@ -489,16 +889,19 @@ function startScene(container, canvas, options = {}) {
     controls.enableRotate = !touchPrimaryOrNarrowForOrbit();
   }
   applyTouchOrbitPolicy();
+  let mqNarrowForDispose = null;
+  let mqTouchForDispose = null;
+  let onOrbitMediaChangeForDispose = null;
   if (typeof window !== 'undefined' && window.matchMedia) {
-    const mqNarrow = window.matchMedia('(max-width: 767px)');
-    const mqTouch = window.matchMedia('(hover: none) and (pointer: coarse)');
-    const onOrbitMediaChange = () => applyTouchOrbitPolicy();
-    if (mqNarrow.addEventListener) {
-      mqNarrow.addEventListener('change', onOrbitMediaChange);
-      mqTouch.addEventListener('change', onOrbitMediaChange);
+    mqNarrowForDispose = window.matchMedia('(max-width: 767px)');
+    mqTouchForDispose = window.matchMedia('(hover: none) and (pointer: coarse)');
+    onOrbitMediaChangeForDispose = () => applyTouchOrbitPolicy();
+    if (mqNarrowForDispose.addEventListener) {
+      mqNarrowForDispose.addEventListener('change', onOrbitMediaChangeForDispose);
+      mqTouchForDispose.addEventListener('change', onOrbitMediaChangeForDispose);
     } else {
-      mqNarrow.addListener(onOrbitMediaChange);
-      mqTouch.addListener(onOrbitMediaChange);
+      mqNarrowForDispose.addListener(onOrbitMediaChangeForDispose);
+      mqTouchForDispose.addListener(onOrbitMediaChangeForDispose);
     }
   }
 
@@ -638,20 +1041,29 @@ function startScene(container, canvas, options = {}) {
     roughness: 0.55,
     metalness: 0.12,
   });
-  const topAffix = new THREE.Mesh(topAffixGeo, topAffixMat);
+  /*
+   * Group + plate mesh (not Mesh-as-parent for jig): children of Mesh can depth-sort oddly vs
+   * the parent’s own geometry, so the mug read “floating” above the blue sheet.
+   */
+  const topAffix = new THREE.Group();
   topAffix.position.y = pinTopY + GAP_ABOVE + AFFIX_THICK / 2;
-  topAffix.castShadow = true;
-  topAffix.receiveShadow = true;
+  const topAffixPlate = new THREE.Mesh(topAffixGeo, topAffixMat);
+  topAffixPlate.castShadow = true;
+  topAffixPlate.receiveShadow = true;
+  topAffix.add(topAffixPlate);
   matGroup.add(topAffix);
 
   /*
    * Jig tooling on the top sheet (additive only): registration barbs + one held blank.
-   * Parent is topAffix so it travels with the blue layer; core mat / pins untouched.
+   * Origin on the plate’s **top face** (group Y = +AFFIX_THICK/2); y=0 is the contact plane.
    */
   const jigRoot = new THREE.Group();
-  jigRoot.position.set(0, AFFIX_THICK / 2 + 0.0015, 0);
+  jigRoot.position.set(0, AFFIX_THICK / 2 + 0.0004, 0);
   topAffix.add(jigRoot);
 
+  const hw = 1.02;
+  const hd = 0.76;
+  const barbInset = 0.072;
   const BARB_H = 0.115;
   const barbGeo = new THREE.CylinderGeometry(0.036, 0.024, BARB_H, 12);
   const barbMat = new THREE.MeshStandardMaterial({
@@ -659,21 +1071,23 @@ function startScene(container, canvas, options = {}) {
     roughness: 0.4,
     metalness: 0.48,
   });
-  const hw = 1.02;
-  const hd = 0.76;
-  const barbInset = 0.072;
   const bx = hw + barbInset;
   const bz = hd + barbInset;
-  [
-    [bx, bz],
-    [bx, -bz],
-    [-bx, bz],
-    [-bx, -bz],
-    [0, bz + 0.055],
-    [0, -(bz + 0.055)],
-    [-(bx + 0.085), 0],
-    [bx + 0.085, 0],
-  ].forEach(([x, z]) => {
+  const barbPositions = isSecondary
+    ? featuresViewMode === 'skyscraper'
+      ? getSkyscraperBarbPositionsXZ(SIDE_SKYSCRAPER_SCALE)
+      : getMugBarbPositionsXZ(SIDE_MUG_SCALE)
+    : [
+        [bx, bz],
+        [bx, -bz],
+        [-bx, bz],
+        [-bx, -bz],
+        [0, bz + 0.055],
+        [0, -(bz + 0.055)],
+        [-(bx + 0.085), 0],
+        [bx + 0.085, 0],
+      ];
+  barbPositions.forEach(([x, z]) => {
     const peg = new THREE.Mesh(barbGeo, barbMat);
     peg.position.set(x, BARB_H / 2, z);
     peg.castShadow = true;
@@ -695,34 +1109,74 @@ function startScene(container, canvas, options = {}) {
     roughness: 0.62,
     metalness: 0.04,
   });
-  /* Box materials: +x,-x,+y(top),-y,+z,-z */
-  const heldBlankMesh = new THREE.Mesh(itemGeo, [
-    itemBodyMat,
-    itemBodyMat,
-    itemTopMat,
-    itemBodyMat,
-    itemBodyMat,
-    itemBodyMat,
-  ]);
-  heldBlankMesh.position.set(0, 0.007 + itemH / 2, 0);
-  heldBlankMesh.castShadow = true;
-  heldBlankMesh.receiveShadow = true;
-  jigRoot.add(heldBlankMesh);
+  /* Hero: flat printable blank. Features (secondary): view mode picks geometry + art. */
+  let heldPrintMat = itemTopMat;
+  if (isSecondary) {
+    if (featuresViewMode === 'skyscraper') {
+      const tower = createSkyscraperInJig();
+      heldPrintMat = tower.shellMat;
+      jigRoot.add(tower.group);
+    } else {
+      const mug = createMugOnSideInJig();
+      heldPrintMat = mug.printMat;
+      jigRoot.add(mug.group);
+    }
+  } else {
+    const heldBlankMesh = new THREE.Mesh(itemGeo, [
+      itemBodyMat,
+      itemBodyMat,
+      itemTopMat,
+      itemBodyMat,
+      itemBodyMat,
+      itemBodyMat,
+    ]);
+    heldBlankMesh.position.set(0, 0.007 + itemH / 2, 0);
+    heldBlankMesh.castShadow = true;
+    heldBlankMesh.receiveShadow = true;
+    jigRoot.add(heldBlankMesh);
+  }
 
-  const PRINT_DEMO_URL = '/images/print-demo-chicago-bean.png';
-  new THREE.TextureLoader().load(
-    PRINT_DEMO_URL,
-    (tex) => {
-      tex.colorSpace = THREE.SRGBColorSpace;
-      tex.anisotropy = Math.min(8, renderer.capabilities.getMaxAnisotropy());
-      tex.wrapS = THREE.ClampToEdgeWrapping;
-      tex.wrapT = THREE.ClampToEdgeWrapping;
-      itemTopMat.map = tex;
-      itemTopMat.needsUpdate = true;
-    },
-    undefined,
-    () => console.warn('[magnamat] Print demo texture failed to load:', PRINT_DEMO_URL)
-  );
+  const printPresets = readFeaturesPrintPresetsFromDom();
+  const initialPrintUrl = printPresets[0]?.topTextureUrl || '/images/print-demo-chicago-bean.png';
+
+  let activePrintMap = null;
+  function disposeActivePrintMap() {
+    if (activePrintMap) {
+      activePrintMap.dispose();
+      activePrintMap = null;
+    }
+  }
+
+  function applyPrintTextureUrl(url, onFail) {
+    new THREE.TextureLoader().load(
+      url,
+      (tex) => {
+        tex.colorSpace = THREE.SRGBColorSpace;
+        tex.anisotropy = Math.min(8, renderer.capabilities.getMaxAnisotropy());
+        tex.wrapS = THREE.ClampToEdgeWrapping;
+        tex.wrapT = THREE.ClampToEdgeWrapping;
+        disposeActivePrintMap();
+        activePrintMap = tex;
+        heldPrintMat.map = tex;
+        heldPrintMat.needsUpdate = true;
+      },
+      undefined,
+      () => {
+        console.warn('[magnamat] Print texture failed to load:', url);
+        if (typeof onFail === 'function') onFail();
+      }
+    );
+  }
+
+  if (!isSecondary) {
+    applyPrintTextureUrl(initialPrintUrl);
+  } else if (featuresViewMode === 'skyscraper') {
+    disposeActivePrintMap();
+    heldPrintMat.map = null;
+    heldPrintMat.needsUpdate = true;
+  } else {
+    applyPrintTextureUrl(initialPrintUrl);
+  }
 
   const baseBottomY = bottomAffix.position.y;
   const baseTopY = topAffix.position.y;
@@ -755,6 +1209,8 @@ function startScene(container, canvas, options = {}) {
    * full “exploded” read (smoothstep). Independent of the slower page “travel”.
    */
   function stackSeparationProgress() {
+    /* Features canvas: keep stack closed so the jig + mug read as one held assembly (not “exploded”). */
+    if (isSecondary) return 0;
     const vh = window.innerHeight || 1;
     const scrollY = window.scrollY || document.documentElement.scrollTop || 0;
     /* ~½ viewport scroll to full spread — visible in hero without going extreme */
@@ -767,6 +1223,7 @@ function startScene(container, canvas, options = {}) {
    * 0 = rest, 1 = fully “arrived” after a longer scroll (smoothstep) — used for hero3dRoot travel only.
    */
   function scrollStoryProgress() {
+    if (isSecondary) return 0;
     const vh = window.innerHeight || 1;
     const doc = document.documentElement;
     const scrollY = window.scrollY || doc.scrollTop || 0;
@@ -786,30 +1243,46 @@ function startScene(container, canvas, options = {}) {
     hoverStack = hits.length > 0 ? 1 : 0;
   }
 
-  canvas.addEventListener('pointermove', (e) => {
+  function onCanvasPointerMove(e) {
     pointerOverCanvas = true;
     lastClientX = e.clientX;
     lastClientY = e.clientY;
     updatePointerRay(lastClientX, lastClientY);
     canvas.style.cursor = hoverStack ? 'pointer' : '';
-  });
-  canvas.addEventListener('pointerleave', () => {
+  }
+  function onCanvasPointerLeave() {
     pointerOverCanvas = false;
     hoverStack = 0;
     canvas.style.cursor = '';
-  });
-  canvas.addEventListener(
-    'pointerdown',
-    (e) => {
-      pointerOverCanvas = true;
-      lastClientX = e.clientX;
-      lastClientY = e.clientY;
-      updatePointerRay(lastClientX, lastClientY);
-    },
-    { passive: true }
-  );
+  }
+  function onCanvasPointerDown(e) {
+    pointerOverCanvas = true;
+    lastClientX = e.clientX;
+    lastClientY = e.clientY;
+    updatePointerRay(lastClientX, lastClientY);
+  }
+  canvas.addEventListener('pointermove', onCanvasPointerMove);
+  canvas.addEventListener('pointerleave', onCanvasPointerLeave);
+  canvas.addEventListener('pointerdown', onCanvasPointerDown, { passive: true });
 
   applyHeroSceneCameraState(camera, controls, matGroup, isAdjustMode);
+  if (isSecondary) {
+    /*
+     * Hero camera aims at a tall hero composition; the features jig reads low with extra “sky”
+     * above it. Nudge orbit slightly more equatorial + closer, and lift the stack vs hero offsets.
+     */
+    const off = camera.position.clone().sub(controls.target);
+    const sph = new THREE.Spherical().setFromVector3(off);
+    sph.phi = THREE.MathUtils.clamp(
+      sph.phi + THREE.MathUtils.degToRad(7),
+      controls.minPolarAngle + 0.02,
+      controls.maxPolarAngle - 0.02
+    );
+    sph.radius = THREE.MathUtils.clamp(sph.radius * 0.93, controls.minDistance + 0.02, controls.maxDistance - 0.02);
+    camera.position.setFromSpherical(sph).add(controls.target);
+    camera.lookAt(controls.target);
+    controls.update();
+  }
   hero3dRoot.add(matGroup);
 
   /* Dev: orbit to the angle you want, then run __magnamatScene.logDefaultAngle() in the console → paste into CMS Hero 3D camera JSON */
@@ -957,17 +1430,24 @@ function startScene(container, canvas, options = {}) {
   });
 
   hero3dRoot.add(fieldGroup);
+  if (isSecondary) {
+    fieldGroup.visible = false;
+  }
 
   let tabSuspended = false;
-  document.addEventListener('visibilitychange', () => {
+  function onVisibilityChangeForMat() {
     tabSuspended = document.visibilityState === 'hidden';
-  });
+  }
+  document.addEventListener('visibilitychange', onVisibilityChangeForMat);
 
   let lastW = W;
   let lastH = H;
   let tick = 0;
+  let sceneAlive = true;
+  let animRaf = 0;
   function animate() {
-    requestAnimationFrame(animate);
+    if (!sceneAlive) return;
+    animRaf = requestAnimationFrame(animate);
     if (tabSuspended) return;
     tick++;
 
@@ -1018,7 +1498,9 @@ function startScene(container, canvas, options = {}) {
     const desktopHero = !isSecondary && iw >= 1024;
     /* Mobile: mat over lower bed (with cover + bg %). Desktop: extra shift in CSS (translateY) */
     const heroMatWorldYOffset = narrowHero ? -0.48 : desktopHero ? -0.82 : 0;
-    hero3dRoot.position.y = 0.52 * t + 0.18 * t2 + heroMatWorldYOffset;
+    /* Features canvas: do not reuse hero’s negative Y drops — they leave empty sky above the jig. */
+    const yBase = isSecondary ? 0.38 : 0.52 * t + 0.18 * t2 + heroMatWorldYOffset;
+    hero3dRoot.position.y = yBase;
     hero3dRoot.position.z = -0.42 * t;
 
     /* Subtle opacity drift — large swings read as “dancing” over the mat */
@@ -1032,6 +1514,52 @@ function startScene(container, canvas, options = {}) {
     renderer.render(scene, camera);
     if (labelRenderer) labelRenderer.render(scene, camera);
   }
+
+  let resizeObserver = null;
+  const disposeScene = () => {
+    sceneAlive = false;
+    if (animRaf) cancelAnimationFrame(animRaf);
+    animRaf = 0;
+    document.removeEventListener('visibilitychange', onVisibilityChangeForMat);
+    canvas.removeEventListener('pointermove', onCanvasPointerMove);
+    canvas.removeEventListener('pointerleave', onCanvasPointerLeave);
+    canvas.removeEventListener('pointerdown', onCanvasPointerDown);
+    window.removeEventListener('resize', scheduleResize, { passive: true });
+    try {
+      resizeObserver?.disconnect();
+    } catch (_) {}
+    resizeObserver = null;
+    if (mqNarrowForDispose && onOrbitMediaChangeForDispose) {
+      try {
+        if (mqNarrowForDispose.removeEventListener) {
+          mqNarrowForDispose.removeEventListener('change', onOrbitMediaChangeForDispose);
+          mqTouchForDispose.removeEventListener('change', onOrbitMediaChangeForDispose);
+        } else {
+          mqNarrowForDispose.removeListener(onOrbitMediaChangeForDispose);
+          mqTouchForDispose.removeListener(onOrbitMediaChangeForDispose);
+        }
+      } catch (_) {}
+    }
+    try {
+      controls.dispose();
+    } catch (_) {}
+    try {
+      renderer.dispose();
+      if (renderer.forceContextLoss) renderer.forceContextLoss();
+    } catch (_) {}
+    if (labelRenderer && container) {
+      try {
+        const el = labelRenderer.domElement;
+        if (el && el.parentNode) el.parentNode.removeChild(el);
+      } catch (_) {}
+    }
+  };
+  if (isSecondary) {
+    __g.__MAGNAMAT_DISPOSE_SCROLL = disposeScene;
+  } else {
+    __g.__MAGNAMAT_DISPOSE_HERO = disposeScene;
+  }
+
   animate();
 
   let resizeRaf = 0;
@@ -1057,15 +1585,20 @@ function startScene(container, canvas, options = {}) {
   window.addEventListener('resize', scheduleResize, { passive: true });
 
   if (typeof ResizeObserver !== 'undefined') {
-    const ro = new ResizeObserver(() => scheduleResize());
-    ro.observe(container);
+    resizeObserver = new ResizeObserver(() => scheduleResize());
+    resizeObserver.observe(container);
   }
 }
 
 function bootMat() {
+  __g.__MAGNAMAT_DISPOSE_HERO?.();
+  __g.__MAGNAMAT_DISPOSE_HERO = null;
   const container = document.getElementById('canvas-container');
+  if (!container) return;
+  /* Fresh node whenever we boot — avoids “dead” canvas after dispose + forceContextLoss (Strict Mode / HMR). */
+  refreshMatCanvasHeroElement();
   const canvas = document.getElementById('mat-canvas');
-  if (!container || !canvas) return;
+  if (!(canvas instanceof HTMLCanvasElement)) return;
 
   let frames = 0;
   function waitLayout() {
@@ -1096,9 +1629,13 @@ function bootMat() {
 }
 
 function bootMatScroll() {
+  __g.__MAGNAMAT_DISPOSE_SCROLL?.();
+  __g.__MAGNAMAT_DISPOSE_SCROLL = null;
   const container = document.getElementById('canvas-container-scroll');
+  if (!container) return;
+  refreshMatCanvasScrollElement();
   const canvas = document.getElementById('mat-canvas-scroll');
-  if (!container || !canvas) return;
+  if (!(canvas instanceof HTMLCanvasElement)) return;
 
   let frames = 0;
   function waitLayout() {
@@ -1170,8 +1707,11 @@ function setupFeatures3dReveal() {
     return smoothstep01(Math.max(0, Math.min(1, u)));
   }
 
+  let bridgeRaf = 0;
+  let bridgeAlive = true;
   function tickBridge() {
-    requestAnimationFrame(tickBridge);
+    if (!bridgeAlive) return;
+    bridgeRaf = requestAnimationFrame(tickBridge);
     const target = scrollTarget01();
     /* Slightly snappier so height/opacity track “fully open at top” without visible lag */
     const ease = reduceMotion ? 1 : 0.14;
@@ -1196,10 +1736,22 @@ function setupFeatures3dReveal() {
     if (cards) cards.style.transform = `translate3d(0, ${shown * slidePx}px, 0)`;
   }
 
-  requestAnimationFrame(tickBridge);
+  __g.__MAGNAMAT_DISPOSE_BRIDGE?.();
+  __g.__MAGNAMAT_DISPOSE_BRIDGE = () => {
+    bridgeAlive = false;
+    if (bridgeRaf) cancelAnimationFrame(bridgeRaf);
+    bridgeRaf = 0;
+  };
+  bridgeRaf = requestAnimationFrame(tickBridge);
 }
 
 function bootAllMat() {
+  disposeMarketingMatScenes();
+  /* View-mode strip: works even when secondary WebGL is skipped (e.g. reduced motion). */
+  ensureFeaturesViewModeClickDelegated();
+  const vm = readFeaturesViewMode();
+  syncFeaturesViewModeToolbarActive(vm);
+  syncFeaturesViewModeCaption(vm);
   bootMat();
   /* Boot with hero-sized box even while clip height is 0 — reveal is overflow clip */
   if (!window.matchMedia || !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
@@ -1210,10 +1762,19 @@ function bootAllMat() {
 
 /** Call once from a client component after the marketing DOM is mounted (Next.js). */
 export function bootMarketingMatRuntime() {
+  if (__g.__MAGNAMAT_RUNTIME_ENTRY) return;
+  __g.__MAGNAMAT_RUNTIME_ENTRY = true;
   setupReveal();
   if (document.readyState === 'complete') {
     requestAnimationFrame(bootAllMat);
   } else {
-    window.addEventListener('load', bootAllMat);
+    window.addEventListener('load', bootAllMat, { once: true });
   }
+}
+
+/* Fast Refresh can replace this module without re-running `ClientRuntime`’s effect — dispose stale WebGL. */
+if (typeof import.meta !== 'undefined' && import.meta.hot) {
+  import.meta.hot.dispose(() => {
+    teardownMarketingMatClient();
+  });
 }

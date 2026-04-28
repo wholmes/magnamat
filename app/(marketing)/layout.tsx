@@ -31,6 +31,11 @@ export default async function MarketingSiteLayout({ children }: { children: Reac
         type="application/json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(chrome.promoModal) }}
       />
+      <script
+        id="magnamat-features-print-presets"
+        type="application/json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(chrome.featuresPrintPresets) }}
+      />
       {children}
       <PromoModal />
       <CartDrawer />

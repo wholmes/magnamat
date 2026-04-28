@@ -2,10 +2,11 @@ import type { CSSProperties } from 'react';
 
 import type { FeaturesContent } from '@/lib/cms/marketing-content';
 import { normalizeMultiline } from '@/lib/cms/marketing-content';
+import type { FeaturesPrintPreset } from '@/lib/cms/types';
 
 import { HeadlineFromSegments } from './headline-from-segments';
 
-type Props = { features: FeaturesContent };
+type Props = { features: FeaturesContent; printPresets: FeaturesPrintPreset[] };
 
 function filamentTagStyle(label: string): CSSProperties {
   if (label === 'TPU') {
@@ -49,13 +50,18 @@ function filamentTagStyle(label: string): CSSProperties {
   };
 }
 
-export function FeaturesSection({ features }: Props) {
+export function FeaturesSection({ features, printPresets }: Props) {
   const f = features;
   return (
     <section
       id="features"
       className="bg-grid"
-      style={{ padding: '110px 24px', backgroundColor: 'var(--page-2)', position: 'relative', overflow: 'hidden' }}
+      style={{
+        padding: '20px 24px 110px',
+        backgroundColor: 'var(--page-2)',
+        position: 'relative',
+        overflow: 'hidden',
+      }}
     >
       <div className="features-section__logo-bg" aria-hidden />
 
@@ -89,66 +95,92 @@ export function FeaturesSection({ features }: Props) {
       />
 
       <div className="features-section__inner" style={{ maxWidth: 1300, margin: '0 auto' }}>
-        <div className="reveal" style={{ marginBottom: 28 }}>
-          <p className="sec-label" style={{ marginBottom: 26 }}>
-            {f.sectionLabel}
-          </p>
-          <HeadlineFromSegments
-            segments={f.headlineSegments}
-            className="display-headline font-display font-extrabold leading-none"
-            style={{ color: 'var(--ink)', marginBottom: 36 }}
-          />
-        </div>
-
-        <div id="features-3d-reveal" className="features-3d-reveal w-full" aria-hidden>
-          <div className="features-3d-reveal__host">
-            <div
-              id="canvas-container-scroll"
-              className="hero-canvas-h features-3d-reveal__canvas features-3d-reveal__stage"
-              style={{ position: 'relative' }}
-            >
-              <canvas id="mat-canvas-scroll" aria-hidden tabIndex={-1} />
-              <div
-                className="font-display font-medium"
-                style={{
-                  position: 'absolute',
-                  top: 10,
-                  left: 10,
-                  zIndex: 5,
-                  fontSize: 8,
-                  color: 'var(--ink-faint)',
-                  letterSpacing: '0.12em',
-                  textTransform: 'uppercase',
-                  pointerEvents: 'none',
-                }}
-              >
-                mag·na·mat v1.0
-              </div>
-              <div
-                style={{
-                  position: 'absolute',
-                  bottom: 10,
-                  right: 10,
-                  zIndex: 5,
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 5,
-                  opacity: 0.5,
-                  pointerEvents: 'none',
-                  color: 'var(--ink-soft)',
-                }}
-              >
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-                  <path d="M5 9l-3 3 3 3M9 5l3-3 3 3M15 19l-3 3-3-3M19 9l3 3-3 3" />
-                  <line x1="12" y1="2" x2="12" y2="22" />
-                  <line x1="2" y1="12" x2="22" y2="12" />
-                </svg>
-                <span style={{ fontFamily: 'var(--font-space-mono), monospace', fontSize: 8, letterSpacing: '0.1em' }}>
-                  drag to orbit
-                </span>
+        <div className="features-hero-split">
+          <div className="features-hero-split__visual reveal">
+            <div id="features-3d-reveal" className="features-3d-reveal w-full" aria-hidden>
+              <div className="features-3d-reveal__host">
+                <div
+                  id="canvas-container-scroll"
+                  className="hero-canvas-h features-3d-reveal__canvas features-3d-reveal__stage"
+                  style={{ position: 'relative' }}
+                >
+                  <canvas id="mat-canvas-scroll" aria-hidden tabIndex={-1} />
+                  <div
+                    className="font-display font-medium"
+                    style={{
+                      position: 'absolute',
+                      top: 10,
+                      left: 10,
+                      zIndex: 5,
+                      fontSize: 8,
+                      color: 'var(--ink-faint)',
+                      letterSpacing: '0.12em',
+                      textTransform: 'uppercase',
+                      pointerEvents: 'none',
+                    }}
+                  >
+                    mag·na·mat v1.0
+                  </div>
+                  <div
+                    style={{
+                      position: 'absolute',
+                      bottom: 10,
+                      right: 10,
+                      zIndex: 5,
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 5,
+                      opacity: 0.5,
+                      pointerEvents: 'none',
+                      color: 'var(--ink-soft)',
+                    }}
+                  >
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                      <path d="M5 9l-3 3 3 3M9 5l3-3 3 3M15 19l-3 3-3-3M19 9l3 3-3 3" />
+                      <line x1="12" y1="2" x2="12" y2="22" />
+                      <line x1="2" y1="12" x2="22" y2="12" />
+                    </svg>
+                    <span
+                      style={{ fontFamily: 'var(--font-space-mono), monospace', fontSize: 8, letterSpacing: '0.1em' }}
+                    >
+                      drag to orbit
+                    </span>
+                  </div>
+                </div>
               </div>
             </div>
+
+            <div className="features-view-mode-wrap">
+              <div className="features-print-presets" role="toolbar" aria-label="Jig preview shape">
+                <button
+                  type="button"
+                  data-features-view-mode="mug"
+                  className="features-print-presets__btn features-print-presets__btn--active"
+                >
+                  Mug
+                </button>
+                <button type="button" data-features-view-mode="skyscraper" className="features-print-presets__btn">
+                  3D Model
+                </button>
+              </div>
+              <p id="features-view-caption" className="features-print-caption">
+                {printPresets[0]?.caption
+                  ? `Mug · ${printPresets[0].caption}`
+                  : 'Mug wrap · demo art from first chrome preset.'}
+              </p>
+            </div>
           </div>
+
+          <header className="features-hero-split__intro reveal">
+            <p className="sec-label" style={{ marginBottom: 26 }}>
+              {f.sectionLabel}
+            </p>
+            <HeadlineFromSegments
+              segments={f.headlineSegments}
+              className="display-headline font-display font-extrabold leading-none"
+              style={{ color: 'var(--ink)', marginBottom: 0 }}
+            />
+          </header>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-5 js-features-cards-shift">
