@@ -1,6 +1,9 @@
 {
   "name": "magnamat",
   "private": true,
+  "engines": {
+    "node": ">=20.9.0"
+  },
   "scripts": {
     "clean": "rm -rf .next node_modules/.cache",
     "dev": "next dev",
