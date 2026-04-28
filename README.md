@@ -89,7 +89,7 @@ Animation: infinite horizontal scroll (`css/styles.css` — `.marquee-track`, ~2
 | Surface tolerance | **±0.01 mm** |
 | Substrate | **Flex spring steel** |
 | Cycle rating | **1,000+ prints** |
-| Release time | **&lt; 0.1 s** |
+| Release time | `< 0.1 s` |
 | Adhesion vs PEI | **60× stronger** |
 | Materials | **PLA · PETG · ABS · TPU · ASA** |
 
@@ -148,6 +148,7 @@ CSS custom properties (high level):
 
 ## 3D hero (`lib/mat-scene.ts` + `#mat-canvas`)
 
+- **Eufy plate reference photo** — `public/images/hero-product-pinfield.png`, rendered with **`next/image`** in `components/marketing/hero-section.tsx` behind the canvas (`css/styles.css` — `.hero-product-photo`). Stays visible through the WebGL layer; the hero **shader sky** uses **moderate alpha** so the wash does not read as an opaque gray slab over the photo.
 - **Three.js** `0.160.0` via npm; runtime booted from `components/client-runtime.tsx` after paint.
 - **OrbitControls** — damped orbit, pan off, distance clamp, polar limits for overhead views.
 - **Scene:** ACES tone mapping, soft shadows, hemisphere + directional lights, large **shader sky** sphere (subtle animated wash).
@@ -166,10 +167,12 @@ CSS custom properties (high level):
 ```
 magnamat/
 ├── app/                  # Next.js App Router (layout, page, fonts, /admin CMS)
+├── middleware.ts       # /features, /specs, /compat → rewrite /
+├── vercel.json         # Vercel: Next preset, build/install, /index.html → /
 ├── components/         # React sections, nav, cart, client runtime
 ├── lib/                # mat-scene (Three), nav-spy, cart, yt-lightbox, CMS queries
-├── prisma/             # SQLite schema + seed
-├── public/images/      # Static assets served by Next
+├── prisma/             # PostgreSQL schema, migrations, seed
+├── public/images/      # Static assets (logos, hero-product-pinfield.png, etc.)
 ├── legacy/
 │   └── index.html      # Pre-Next single-page reference (not used by `next dev`)
 ├── favicon.svg
@@ -230,6 +233,14 @@ There is no third-party CMS product — only this repo’s Prisma models + admin
 
 ---
 
+## Deployment (Vercel)
+
+- **Framework:** Next.js App Router. Repo **`vercel.json`** pins **`framework: "nextjs"`**, **`buildCommand`**: `prisma generate && next build`, **`installCommand`**: `npm install`, and clears a bad dashboard override with **`outputDirectory": null`**. Set **`DATABASE_URL`** (and CMS secrets if you use admin) in the Vercel project environment.
+- **Clean URLs** for `/features`, `/specs`, `/compat` are handled in **`middleware.ts`** (rewrite to `/`); do not point legacy **`vercel.json` rewrites** at a non-existent **`/index.html`** (that caused platform **`NOT_FOUND`** before this setup).
+- **Project settings:** root directory **`.`**, framework **Next.js**, leave **Output directory** empty unless you know you need an override (wrong output dir can serve an empty tree and 404 everything).
+
+---
+
 ## Local development
 
 **Next.js app:** copy `.env.example` to `.env`, fill Postgres URLs and CMS secrets, then migrate and seed.
@@ -241,6 +252,8 @@ npm run db:migrate:deploy
 npm run db:seed
 npm run dev
 ```
+
+**Stale `.next` / missing chunk errors** (e.g. `Cannot find module './124.js'`): stop all dev and start processes, then run **`npm run clean`** and **`npm run build`** (or **`npm run dev:fresh`** to clean and start dev). Avoid running **`next dev`** and **`next build`** against the same `.next` folder at the same time.
 
 For a quick throwaway DB without migration history you can still use `npx prisma db push`, but production-style deploys should use **`db:migrate:deploy`**.
 
