@@ -57,16 +57,15 @@ export function HeroSection({ hero }: Props) {
                 as="h1"
                 segments={hero.titleSegments}
                 className="hero-title font-display font-extrabold leading-none"
-                style={{ marginBottom: 20, color: 'var(--ink)' }}
+                style={{ marginBottom: 26, color: 'var(--ink)' }}
               />
 
               <p
+                className="hero-body-copy"
                 style={{
                   color: 'var(--ink-muted)',
                   fontSize: 'clamp(15px,3.8vw,17px)',
-                  lineHeight: 1.65,
-                  maxWidth: 460,
-                  marginBottom: 24,
+                  marginBottom: 28,
                 }}
               >
                 {hero.bodyBeforeBrand}
@@ -74,7 +73,7 @@ export function HeroSection({ hero }: Props) {
                 {normalizeMultiline(hero.bodyAfterBrand)}
               </p>
 
-              <div style={{ display: 'flex', gap: 14, flexWrap: 'wrap', marginBottom: 28 }}>
+              <div style={{ display: 'flex', gap: 14, flexWrap: 'wrap', marginBottom: 26 }}>
                 <button
                   type="button"
                   className="btn btn-primary js-add-to-cart"
@@ -142,6 +141,18 @@ export function HeroSection({ hero }: Props) {
                   </div>
                 ))}
               </div>
+
+              <p className="hero-proof-strip">
+                <span className="hero-proof-strip__item">235×235 mm build area</span>
+                <span className="hero-proof-strip__sep" aria-hidden="true">
+                  ·
+                </span>
+                <span className="hero-proof-strip__item">Spring steel substrate</span>
+                <span className="hero-proof-strip__sep" aria-hidden="true">
+                  ·
+                </span>
+                <span className="hero-proof-strip__item">Drop-in Eufy Maker fitment</span>
+              </p>
             </div>
 
             <div className="hero-product-col">

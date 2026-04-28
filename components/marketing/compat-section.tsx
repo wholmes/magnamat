@@ -29,15 +29,23 @@ export function CompatSection({ compat: c }: Props) {
 
       <div style={{ maxWidth: 780, margin: '0 auto', position: 'relative', zIndex: 1 }}>
         <div className="reveal">
-          <p className="sec-label" style={{ marginBottom: 18 }}>
+          <p className="sec-label" style={{ marginBottom: 26 }}>
             {c.sectionLabel}
           </p>
           <HeadlineFromSegments
             segments={c.headlineSegments}
             className="font-display font-extrabold leading-none"
-            style={{ fontSize: 'clamp(2.8rem,6vw,5.5rem)', marginBottom: 26, color: 'var(--ink)' }}
+            style={{ fontSize: 'clamp(2.8rem,6vw,5.5rem)', marginBottom: 36, color: 'var(--ink)' }}
           />
-          <p style={{ color: 'var(--ink-muted)', fontSize: 16, lineHeight: 1.75, maxWidth: 480, margin: '0 auto 44px' }}>
+          <p
+            style={{
+              color: 'var(--ink-muted)',
+              fontSize: 16,
+              lineHeight: 1.75,
+              maxWidth: 'min(36em, 520px)',
+              margin: '0 auto 44px',
+            }}
+          >
             {normalizeMultiline(c.body)}
           </p>
         </div>

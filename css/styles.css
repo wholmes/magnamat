@@ -714,6 +714,43 @@ body::after {
   font-weight: 800;
   line-height: 1;
   color: var(--ink);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Hero — tighter measure + proof strip (design elevation) */
+.hero-body-copy {
+  max-width: min(38em, 520px);
+  line-height: 1.62;
+}
+
+.hero-proof-strip {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 0;
+  margin-top: 16px;
+  padding-top: 14px;
+  border-top: 1px solid var(--border);
+  font-family: var(--font-space-mono), monospace;
+  font-size: 9px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+}
+
+.hero-proof-strip__item {
+  display: inline;
+}
+
+.hero-proof-strip__sep {
+  margin: 0 10px;
+  color: var(--ink-faint);
+  user-select: none;
+}
+
+/* Spec table value column — aligned numerals */
+.spec-row__value {
+  font-variant-numeric: tabular-nums;
 }
 
 /* Nav — bar reads as a shelf, not a transparent strip */

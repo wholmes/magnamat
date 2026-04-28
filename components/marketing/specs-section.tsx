@@ -11,13 +11,13 @@ export function SpecsSection({ specs: s }: Props) {
       <div style={{ maxWidth: 1300, margin: '0 auto' }}>
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-start">
           <div className="reveal">
-            <p className="sec-label" style={{ marginBottom: 18 }}>
+            <p className="sec-label" style={{ marginBottom: 26 }}>
               {s.sectionLabel}
             </p>
             <HeadlineFromSegments
               segments={s.headlineSegments}
               className="display-headline font-display font-extrabold leading-none"
-              style={{ marginBottom: 36, color: 'var(--ink)' }}
+              style={{ marginBottom: 44, color: 'var(--ink)' }}
             />
 
             <div
@@ -146,7 +146,7 @@ export function SpecsSection({ specs: s }: Props) {
                     {row.key}
                   </span>
                   <span
-                    className="font-display font-semibold"
+                    className="spec-row__value font-display font-semibold"
                     style={{
                       fontSize: row.key === 'Materials' ? 13 : 16,
                       color: toneToCssColor(row.color),

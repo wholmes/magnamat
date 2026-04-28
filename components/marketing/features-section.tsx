@@ -90,13 +90,13 @@ export function FeaturesSection({ features }: Props) {
 
       <div className="features-section__inner" style={{ maxWidth: 1300, margin: '0 auto' }}>
         <div className="reveal" style={{ marginBottom: 28 }}>
-          <p className="sec-label" style={{ marginBottom: 18 }}>
+          <p className="sec-label" style={{ marginBottom: 26 }}>
             {f.sectionLabel}
           </p>
           <HeadlineFromSegments
             segments={f.headlineSegments}
             className="display-headline font-display font-extrabold leading-none"
-            style={{ color: 'var(--ink)' }}
+            style={{ color: 'var(--ink)', marginBottom: 36 }}
           />
         </div>
 
