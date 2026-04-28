@@ -1,4 +1,4 @@
-import type { SeoSettingsDTO, SiteChromeConfig, SiteSettingsDTO } from './types';
+import type { PromoModalConfig, SeoSettingsDTO, SiteChromeConfig, SiteSettingsDTO } from './types';
 
 export const DEFAULT_COMMERCE: SiteChromeConfig['commerce'] = {
   checkoutUrl: '',
@@ -13,6 +13,22 @@ export const DEFAULT_COMMERCE: SiteChromeConfig['commerce'] = {
   ],
 };
 
+export const DEFAULT_PROMO_MODAL: PromoModalConfig = {
+  enabled: false,
+  title: 'Stay in the loop',
+  body: 'Get launch updates and print tips for mag·na·mat on the Eufy Maker.',
+  coupons: [],
+  primaryCtaLabel: 'Pre-order',
+  primaryCtaHref: '/',
+  dismissLabel: 'Not now',
+  rules: {
+    minLifetimeVisits: 3,
+    minScrollY: 480,
+    pathScope: 'home',
+    dismissStorageKey: 'promo-v1',
+  },
+};
+
 export const DEFAULT_CHROME: SiteChromeConfig = {
   navLinks: [
     { label: 'Features', href: '/features' },
@@ -21,6 +37,7 @@ export const DEFAULT_CHROME: SiteChromeConfig = {
   ],
   youtubeVideoId: 'M7lc1UVf-VE',
   commerce: DEFAULT_COMMERCE,
+  promoModal: DEFAULT_PROMO_MODAL,
 };
 
 export const DEFAULT_SITE_SETTINGS: SiteSettingsDTO = {

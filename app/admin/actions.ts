@@ -2,11 +2,13 @@
 
 import { redirect } from 'next/navigation';
 
-import { validateChromeJsonString } from '@/lib/cms/chrome-json';
+import { parseChromeConfig, validateChromeJsonString } from '@/lib/cms/chrome-json';
+import { parseCouponsMultiline } from '@/lib/cms/promo-modal-coupons';
 import { heroSceneCameraToJson, tryParseHeroSceneCameraFromEditor } from '@/lib/cms/hero-scene-camera';
 import { marketingPageToJson, tryParseMarketingPageFromEditor } from '@/lib/cms/marketing-content';
 import { revalidateAfterCmsWrite } from '@/lib/cms/revalidate-public';
 import { prisma } from '@/lib/prisma';
+import type { PromoModalConfig, PromoModalPathScope } from '@/lib/cms/types';
 import {
   adminPasswordConfigured,
   adminPasswordMatches,
@@ -47,6 +49,48 @@ export async function adminLogout() {
 }
 
 export type SaveState = { ok?: boolean; error?: string };
+
+function clampInt(n: number, min: number, max: number) {
+  if (!Number.isFinite(n)) return min;
+  return Math.min(max, Math.max(min, Math.floor(n)));
+}
+
+export async function savePromoModal(_prev: SaveState | undefined, formData: FormData): Promise<SaveState> {
+  await requireCmsSession();
+  const row = await prisma.siteChrome.findUnique({ where: { id: 'default' } });
+  const base = parseChromeConfig(row?.configJson ?? '{}');
+
+  const pathRaw = String(formData.get('promoPathScope') ?? 'home');
+  const pathScope: PromoModalPathScope = pathRaw === 'any' ? 'any' : 'home';
+
+  const promoModal: PromoModalConfig = {
+    enabled: formData.get('promoEnabled') === 'on',
+    title: String(formData.get('promoTitle') ?? '').trim(),
+    body: String(formData.get('promoBody') ?? ''),
+    coupons: parseCouponsMultiline(String(formData.get('promoCouponsRaw') ?? '')),
+    primaryCtaLabel: String(formData.get('promoPrimaryCtaLabel') ?? '').trim(),
+    primaryCtaHref: String(formData.get('promoPrimaryCtaHref') ?? '').trim(),
+    dismissLabel: String(formData.get('promoDismissLabel') ?? '').trim(),
+    rules: {
+      minLifetimeVisits: clampInt(parseInt(String(formData.get('promoMinLifetimeVisits') ?? '0'), 10), 0, 9999),
+      minScrollY: clampInt(parseInt(String(formData.get('promoMinScrollY') ?? '0'), 10), 0, 1_000_000),
+      pathScope,
+      dismissStorageKey: String(formData.get('promoDismissStorageKey') ?? '').trim(),
+    },
+  };
+
+  const next = { ...base, promoModal };
+  const checked = validateChromeJsonString(JSON.stringify(next));
+  if (!checked.ok) return { error: checked.error };
+
+  await prisma.siteChrome.upsert({
+    where: { id: 'default' },
+    create: { id: 'default', configJson: checked.normalized },
+    update: { configJson: checked.normalized },
+  });
+  revalidateAfterCmsWrite();
+  return { ok: true };
+}
 
 export async function saveSiteChrome(_prev: SaveState | undefined, formData: FormData): Promise<SaveState> {
   await requireCmsSession();

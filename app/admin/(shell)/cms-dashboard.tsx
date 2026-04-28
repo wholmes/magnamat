@@ -5,10 +5,13 @@ import { useActionState } from 'react';
 import type { SaveState } from '@/app/admin/actions';
 import { saveSeoSettings, saveSiteChrome, saveSiteSettings } from '@/app/admin/actions';
 import { HeroSceneCameraForm } from '@/components/admin/hero-scene-camera-form';
+import { PromoModalRulesDialog } from '@/components/admin/promo-modal-rules-dialog';
 import { DEFAULT_CHROME, DEFAULT_SEO, DEFAULT_SITE_SETTINGS } from '@/lib/cms/defaults';
+import type { PromoModalConfig } from '@/lib/cms/types';
 
 type Props = {
   chromeJson: string;
+  promoModal: PromoModalConfig;
   availabilityStatus: string;
   navHideOnScroll: boolean;
   seoTitle: string;
@@ -21,6 +24,7 @@ type Props = {
 
 export function CmsDashboard({
   chromeJson,
+  promoModal,
   availabilityStatus,
   navHideOnScroll,
   seoTitle,
@@ -72,11 +76,13 @@ export function CmsDashboard({
       >
         <h2 style={{ fontSize: '1.05rem', fontWeight: 700, marginBottom: 12 }}>Site chrome (JSON)</h2>
         <p style={{ fontSize: 13, color: '#52525b', marginBottom: 12, lineHeight: 1.5 }}>
-          Nav links, YouTube id, and <strong>commerce</strong> (checkout URL + product catalog for the cart —{' '}
-          <code style={{ fontSize: 11 }}>data-product-id</code> must match a product <code style={{ fontSize: 11 }}>id</code>
-          ). Example defaults:{' '}
+          Nav links, YouTube id, <strong>commerce</strong>, and <strong>promoModal</strong> (optional marketing dialog +
+          rules — editable below without hand-editing JSON). Example defaults:{' '}
           <code style={{ fontSize: 11 }}>{JSON.stringify(DEFAULT_CHROME)}</code>
         </p>
+        <div style={{ marginBottom: 14 }}>
+          <PromoModalRulesDialog initial={promoModal} />
+        </div>
         <form action={chromeAction} style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
           <textarea
             name="configJson"

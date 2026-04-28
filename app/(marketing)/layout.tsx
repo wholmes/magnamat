@@ -1,5 +1,6 @@
 import { CartDrawer } from '@/components/cart-drawer';
 import { ClientRuntime } from '@/components/client-runtime';
+import { PromoModal } from '@/components/promo-modal';
 import { SiteNav } from '@/components/site-nav';
 import { YtLightbox } from '@/components/yt-lightbox';
 import { heroSceneCameraToJson } from '@/lib/cms/hero-scene-camera';
@@ -25,7 +26,13 @@ export default async function MarketingSiteLayout({ children }: { children: Reac
         type="application/json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(chrome.commerce) }}
       />
+      <script
+        id="magnamat-promo-modal-config"
+        type="application/json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(chrome.promoModal) }}
+      />
       {children}
+      <PromoModal />
       <CartDrawer />
       <YtLightbox />
       <ClientRuntime />

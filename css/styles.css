@@ -1137,3 +1137,145 @@ button.nav-link {
   height: 100%;
   border: 0;
 }
+
+/* Marketing promo `<dialog>` (rules from Site chrome → `promoModal`) */
+.promo-modal {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  margin: 0;
+  border: none;
+  border-radius: 14px;
+  padding: 24px 26px;
+  width: min(460px, calc(100vw - 32px));
+  max-width: min(460px, calc(100vw - 32px));
+  max-height: min(90dvh, calc(100vh - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px) - 24px));
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.28);
+  background: #fff;
+  color: var(--ink);
+}
+.promo-modal__brand {
+  margin: 0 0 14px;
+  text-align: center;
+}
+.promo-modal__logo {
+  display: inline-block;
+  height: clamp(40px, 11vw, 54px);
+  width: auto;
+  max-width: 100%;
+}
+.promo-modal::backdrop {
+  background: rgba(22, 22, 22, 0.45);
+}
+.promo-modal__title {
+  font-size: clamp(1.35rem, 4.2vw, 1.85rem);
+  margin: 0 0 12px;
+  line-height: 1.08;
+  color: var(--ink);
+  letter-spacing: -0.02em;
+}
+.promo-modal__body {
+  margin-bottom: 16px;
+}
+.promo-modal__line {
+  margin: 0 0 8px;
+  font-size: 15px;
+  line-height: 1.55;
+  color: var(--ink-muted);
+}
+.promo-modal__line:last-child {
+  margin-bottom: 0;
+}
+
+/* High-contrast coupon strips */
+.promo-modal__coupons {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+.promo-modal__coupon {
+  border-radius: 10px;
+  overflow: hidden;
+  border: 1px solid rgba(22, 22, 22, 0.12);
+  background: linear-gradient(135deg, #1a1d22 0%, #252a32 100%);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06);
+}
+.promo-modal__coupon-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 8px 12px;
+  background: rgba(0, 0, 0, 0.2);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+.promo-modal__coupon-label {
+  font-family: var(--font-space-mono), monospace;
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.72);
+}
+.promo-modal__coupon-copy {
+  font-family: var(--font-space-mono), monospace;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  padding: 6px 10px;
+  border-radius: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  background: rgba(255, 255, 255, 0.08);
+  color: #fff;
+  cursor: pointer;
+}
+.promo-modal__coupon-copy:hover {
+  background: rgba(59, 155, 229, 0.35);
+  border-color: rgba(59, 155, 229, 0.55);
+}
+.promo-modal__coupon-code {
+  display: block;
+  margin: 0;
+  padding: 14px 14px 16px;
+  font-family: var(--font-space-mono), ui-monospace, monospace;
+  font-size: clamp(1.05rem, 4.5vw, 1.35rem);
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-align: center;
+  color: #fff;
+  text-shadow: 0 1px 0 rgba(0, 0, 0, 0.35);
+  word-break: break-all;
+}
+
+/* On-brand `.btn` / clip-path — widen + pad so copy never clips in the dialog */
+.promo-modal__actions {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  align-items: stretch;
+}
+.promo-modal .btn {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 16px 44px;
+  min-height: 52px;
+  font-size: 15px;
+  line-height: 1.2;
+  text-align: center;
+  white-space: normal;
+  /* Slightly wider chamfer than default so short labels stay inside the parallelogram */
+  clip-path: polygon(12px 0%, 100% 0%, calc(100% - 12px) 100%, 0% 100%);
+}
+.promo-modal a.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.admin-promo-dialog::backdrop {
+  background: rgba(22, 22, 22, 0.35);
+}

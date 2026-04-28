@@ -48,11 +48,8 @@ export default async function AdminSitePage() {
       }),
   ]);
 
-  const chromeJson = JSON.stringify(
-    chromeRow?.configJson ? parseChromeConfig(chromeRow.configJson) : DEFAULT_CHROME,
-    null,
-    2
-  );
+  const chromeResolved = chromeRow?.configJson ? parseChromeConfig(chromeRow.configJson) : DEFAULT_CHROME;
+  const chromeJson = JSON.stringify(chromeResolved, null, 2);
 
   const availabilityStatus = settingsRow?.availabilityStatus ?? DEFAULT_SITE_SETTINGS.availabilityStatus;
   const navHideOnScroll = settingsRow?.navHideOnScroll ?? DEFAULT_SITE_SETTINGS.navHideOnScroll;
@@ -72,6 +69,7 @@ export default async function AdminSitePage() {
       </p>
       <CmsDashboard
         chromeJson={chromeJson}
+        promoModal={chromeResolved.promoModal}
         availabilityStatus={availabilityStatus}
         navHideOnScroll={navHideOnScroll}
         seoTitle={seoTitle}
