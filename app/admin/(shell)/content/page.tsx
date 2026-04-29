@@ -16,8 +16,15 @@ export default async function AdminMarketingContentPage() {
         Hero, features, specs, compatibility, and footer — one JSON document (
         <code style={{ fontSize: 12 }}>MarketingPageContent</code> in{' '}
         <code style={{ fontSize: 12 }}>lib/cms/marketing-content.ts</code>). Unknown keys are ignored; missing keys use
-        defaults. Set <code style={{ fontSize: 12 }}>hero.marqueeScroll</code> to <code style={{ fontSize: 12 }}>false</code>{' '}
-        to stop the hero ticker animation (otherwise omit or use <code style={{ fontSize: 12 }}>true</code>).
+        defaults. Set <code style={{ fontSize: 12 }}>hero.marqueeEnabled</code> to <code style={{ fontSize: 12 }}>false</code>{' '}
+        to remove the hero ticker strip entirely. Set <code style={{ fontSize: 12 }}>hero.marqueeScroll</code> to{' '}
+        <code style={{ fontSize: 12 }}>false</code> to keep the strip but stop horizontal motion (otherwise omit or use{' '}
+        <code style={{ fontSize: 12 }}>true</code>). Set <code style={{ fontSize: 12 }}>hero.marqueeFadeLeft</code> to{' '}
+        <code style={{ fontSize: 12 }}>true</code> for a soft mask so the left side of the ticker fades out fully toward the
+        viewport edge. Use <code style={{ fontSize: 12 }}>features.introBody</code> for the paragraph under the features
+        headline (omit or empty string to hide). The Mug / 3D Model preset bar under the features 3D viewer is off unless you
+        set <code style={{ fontSize: 12 }}>features.showPrintPresetToolbar</code> to <code style={{ fontSize: 12 }}>true</code>{' '}
+        (older <code style={{ fontSize: 12 }}>printPresetToolbar</code> keys in saved JSON are ignored).
       </p>
       <div
         style={{

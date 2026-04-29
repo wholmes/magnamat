@@ -72,10 +72,10 @@
 <!-- ═══════════════════════════
      HERO
 ═══════════════════════════ -->
+<!-- To match Next.js with hero.marqueeEnabled: false — add class hero-above-fold--no-marquee here and remove the .hero-marquee block below. -->
 <section class="bg-grid hero-above-fold">
 
   <div class="hero-above-fold__main w-full max-w-[1300px] mx-auto px-4 pt-6 pb-8 sm:px-6 sm:pt-8 sm:pb-10 lg:px-6 lg:py-12">
-    <div class="hero-above-fold__reveal">
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-8 lg:items-center">
 
       <div class="order-1 min-w-0 hero-stack-copy">
@@ -85,10 +85,10 @@
           <span style="font-family:'Space Mono',monospace;font-size:10px;letter-spacing:0.14em;text-transform:uppercase;color:var(--ink-soft);">UV resin · Eufy Maker · texture fidelity</span>
         </div>
 
-        <h1 class="hero-title font-display font-extrabold leading-none" style="margin-bottom:20px;color:var(--ink);">
-          Grip.<br>
-          <span style="color:var(--red);">Hold.</span><br>
-          <span style="color:var(--blue);">Release.</span>
+        <h1 class="hero-title font-display font-extrabold leading-none headline-mask" style="margin-bottom:20px;color:var(--ink);">
+          <span class="headline-mask-line"><span class="headline-mask-line__inner" style="animation-delay:0.06s;">Grip.</span></span>
+          <span class="headline-mask-line"><span class="headline-mask-line__inner" style="color:var(--red);animation-delay:0.17s;">Hold.</span></span>
+          <span class="headline-mask-line"><span class="headline-mask-line__inner" style="color:var(--blue);animation-delay:0.28s;">Release.</span></span>
         </h1>
 
         <p style="color:var(--ink-muted);font-size:clamp(15px,3.8vw,17px);line-height:1.65;max-width:460px;margin-bottom:24px;">
@@ -100,7 +100,7 @@
           <a href="/specs" class="btn btn-outline" style="font-size:15px;padding:15px 36px;text-decoration:none;">View Specs</a>
         </div>
 
-        <div class="flex" style="border:1px solid var(--border);overflow:hidden;border-radius:4px;background:var(--card);">
+        <div class="flex hero-stats-strip" style="border:1px solid rgba(22,22,22,0.1);overflow:hidden;border-radius:4px;background:rgba(255,255,255,0.38);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);">
           <div style="padding:12px 10px;border-right:1px solid var(--border);flex:1;text-align:center;">
             <div class="stat-num" style="font-size:clamp(18px,4.5vw,24px);">250<span style="color:var(--red);font-size:16px;">+</span></div>
             <div style="font-size:9px;letter-spacing:0.14em;text-transform:uppercase;color:var(--ink-faint);margin-top:5px;font-family:'Space Mono',monospace;">Pin Contacts</div>
@@ -129,10 +129,10 @@
       </div>
 
     </div>
-    </div>
   </div>
 
   <!-- Marquee: pinned to bottom of hero / first viewport -->
+  <!-- Optional: add hero-marquee--fade-left for left-edge fade (see hero.marqueeFadeLeft in CMS JSON) -->
   <div class="hero-marquee" aria-hidden="true">
     <div class="marquee-track" style="display:inline-block;">
     <span style="font-family:'Barlow Condensed',sans-serif;font-weight:650;font-size:13px;letter-spacing:0.25em;text-transform:uppercase;color:rgba(255,255,255,0.9);">
@@ -146,7 +146,8 @@
 <!-- ═══════════════════════════
      FEATURES
 ═══════════════════════════ -->
-<section id="features" class="features-built-section" style="padding:110px 24px;position:relative;overflow:hidden;">
+<section class="features-specs-surface" style="padding:20px 24px 110px;position:relative;overflow:hidden;">
+  <div id="features" class="features-specs__features" style="position:relative">
 
   <div class="features-section__logo-bg" aria-hidden="true"></div>
 
@@ -160,6 +161,9 @@
       <h2 class="display-headline font-display font-extrabold leading-none" style="color:var(--ink);">
         Built<br><span style="color:var(--blue);">different.</span>
       </h2>
+      <p class="features-intro-body" style="margin-top:18px;margin-bottom:0;max-width:min(36em,520px);color:var(--ink-muted);font-size:clamp(15px,3.5vw,17px);line-height:1.65;">
+        Engineered for real workflows — magnetic micro-pins for even hold, flex steel for a clean release, and a surface tuned for common filaments without glue or babysitting.
+      </p>
     </div>
 
     <!-- Second 3D mat: lives between headline and the three cards; scroll-reveals in this slot -->
@@ -248,13 +252,10 @@
 
     </div>
   </div>
-</section>
+  </div>
 
-<!-- ═══════════════════════════
-     SPECS
-═══════════════════════════ -->
-<section id="specs" style="padding:110px 24px;background:var(--page);">
-  <div style="max-width:1300px;margin:0 auto;">
+  <div id="specs" class="features-specs__specs" style="position:relative;overflow:hidden;padding-top:clamp(48px,8vw,88px)">
+    <div class="specs-section__inner" style="max-width:1300px;margin:0 auto;">
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-16 items-start">
 
       <div class="reveal">
@@ -324,13 +325,10 @@
       </div>
 
     </div>
+    </div>
   </div>
-</section>
 
-<!-- ═══════════════════════════
-     COMPATIBILITY
-═══════════════════════════ -->
-<section id="compat" style="padding:110px 24px;background:var(--card);text-align:center;position:relative;overflow:hidden;">
+  <div id="compat" class="features-specs__compat compat-section compat-section--embedded" role="region" aria-label="Designed for Eufy">
 
   <div class="compat-rings" aria-hidden="true">
     <div class="ring" style="width:700px;height:700px;border-width:1px;border-color:rgba(0,0,0,0.055);"></div>
@@ -341,7 +339,8 @@
     <div class="compat-rings__burst"></div>
   </div>
 
-  <div style="max-width:780px;margin:0 auto;position:relative;z-index:1;">
+  <div class="compat-slab bg-grid" style="max-width:min(920px,100%);margin:0 auto;">
+    <div style="max-width:780px;margin:0 auto;position:relative;z-index:1;">
     <div class="reveal">
       <p class="sec-label" style="margin-bottom:18px;">// 03 — System</p>
       <h2 class="font-display font-extrabold leading-none" style="font-size:clamp(2.8rem,6vw,5.5rem);margin-bottom:26px;color:var(--ink);">
@@ -370,6 +369,8 @@
     <div class="reveal" style="transition-delay:0.3s;">
       <button type="button" class="btn btn-primary js-add-to-cart" data-product-id="magnamat-v1" style="font-size:17px;padding:18px 52px;" aria-label="Add mag·na·mat v1.0 to cart">Get Your mag·na·mat</button>
     </div>
+    </div>
+  </div>
   </div>
 </section>
 
@@ -416,8 +417,8 @@
 <!-- ═══════════════════════════
      FOOTER
 ═══════════════════════════ -->
-<footer style="border-top:1px solid var(--border);padding:36px 24px;background:var(--page-2);">
-  <div style="max-width:1300px;margin:0 auto;display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:18px;">
+<footer class="bg-grid site-footer" style="border-top:1px solid var(--border);padding:36px 24px;">
+  <div class="site-footer__inner" style="max-width:1300px;margin:0 auto;display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:18px;">
     <div class="logo logo-mark logo-mark--footer">
       <img src="images/logo-transparent.svg" alt="mag·na·mat" width="1024" height="350" decoding="async" loading="lazy">
     </div>

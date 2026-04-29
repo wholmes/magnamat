@@ -6,8 +6,12 @@ type Props = { footer: FooterContent };
 
 export function SiteFooter({ footer: f }: Props) {
   return (
-    <footer className="bg-grid" style={{ borderTop: '1px solid var(--border)', padding: '36px 24px', backgroundColor: 'var(--page-2)' }}>
+    <footer
+      className="bg-grid site-footer"
+      style={{ borderTop: '1px solid var(--border)', padding: '36px 24px' }}
+    >
       <div
+        className="site-footer__inner"
         style={{
           maxWidth: 1300,
           margin: '0 auto',

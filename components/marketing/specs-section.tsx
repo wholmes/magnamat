@@ -5,20 +5,10 @@ import { HeadlineFromSegments } from './headline-from-segments';
 
 type Props = { specs: SpecsContent };
 
-export function SpecsSection({ specs: s }: Props) {
+/** Spec sheet body — lives inside `FeaturesSpecsSection` under `#specs`. */
+export function SpecsSectionContent({ specs: s }: Props) {
   return (
-    <section
-      id="specs"
-      className="bg-grid"
-      style={{
-        padding: '110px 24px',
-        backgroundColor: 'var(--page)',
-        position: 'relative',
-        overflow: 'hidden',
-      }}
-    >
-      <div className="specs-section__eufy-bg" aria-hidden />
-
+    <>
       <div className="specs-section__inner" style={{ maxWidth: 1300, margin: '0 auto' }}>
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-start">
           <div className="reveal">
@@ -171,6 +161,6 @@ export function SpecsSection({ specs: s }: Props) {
           </div>
         </div>
       </div>
-    </section>
+    </>
   );
 }

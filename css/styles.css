@@ -37,8 +37,24 @@ html {
   /* Fixed nav: in-page anchors (#features, etc.) land with room below the bar */
   scroll-padding-top: 76px;
 }
+/*
+ * Ambient depth — soft black radial washes (fixed “random” layout in % / vw space, not scroll-parallax).
+ * Sits on `--page`; keeps contrast low so type and cards stay clean.
+ */
 body {
-  background: var(--page);
+  background-color: var(--page);
+  background-image:
+    radial-gradient(ellipse 125% 90% at -8% 12%, rgba(22, 22, 22, 0.055) 0%, transparent 44%),
+    radial-gradient(ellipse 95% 75% at 108% 6%, rgba(22, 22, 22, 0.048) 0%, transparent 42%),
+    radial-gradient(ellipse 70% 110% at 52% 112%, rgba(22, 22, 22, 0.042) 0%, transparent 46%),
+    radial-gradient(ellipse 85% 55% at 82% 36%, rgba(22, 22, 22, 0.034) 0%, transparent 48%),
+    radial-gradient(ellipse 60% 85% at 14% 68%, rgba(22, 22, 22, 0.04) 0%, transparent 45%),
+    radial-gradient(ellipse 110% 45% at 64% 20%, rgba(22, 22, 22, 0.03) 0%, transparent 50%),
+    radial-gradient(ellipse 50% 70% at 94% 82%, rgba(22, 22, 22, 0.036) 0%, transparent 47%),
+    radial-gradient(ellipse 90% 65% at 28% 44%, rgba(22, 22, 22, 0.028) 0%, transparent 52%),
+    radial-gradient(ellipse 75% 50% at 40% 92%, rgba(22, 22, 22, 0.032) 0%, transparent 49%);
+  background-repeat: no-repeat;
+  background-size: 100% 100%;
   color: var(--ink);
   font-family: var(--font-barlow), sans-serif;
   overflow-x: hidden;
@@ -97,14 +113,32 @@ a.btn-outline:focus-visible {
   .btn-outline:hover { transform: none; }
   .skip-link { transition: none; }
   #features .features-cards-grid { will-change: auto; }
+  .headline-mask-line__inner {
+    animation: none !important;
+    transform: none !important;
+  }
+  .hero-stats-strip {
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    background: rgba(255, 255, 255, 0.6);
+  }
+  body {
+    background-image: radial-gradient(ellipse 100% 80% at 50% 35%, rgba(22, 22, 22, 0.028) 0%, transparent 55%);
+  }
+  .site-footer::before {
+    background-image: radial-gradient(ellipse 95% 70% at 50% 58%, rgba(22, 22, 22, 0.024) 0%, transparent 54%);
+  }
+  .features-specs-surface {
+    background-image:
+      radial-gradient(ellipse 78% 55% at 50% 42%, rgba(0, 0, 0, 0.12) 0%, transparent 54%),
+      radial-gradient(ellipse 70% 48% at 50% 28%, rgba(255, 255, 255, 0.38) 0%, transparent 58%),
+      linear-gradient(rgba(22, 22, 22, 0.038) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(22, 22, 22, 0.038) 1px, transparent 1px);
+    background-size: auto, auto, 48px 48px, 48px 48px;
+    background-repeat: no-repeat, no-repeat, repeat, repeat;
+  }
   body::after {
     opacity: 0.018;
-  }
-  .hero-above-fold__reveal {
-    animation: none !important;
-    clip-path: none !important;
-    -webkit-clip-path: none !important;
-    opacity: 1 !important;
   }
 }
 
@@ -126,6 +160,46 @@ body::after {
 ::-webkit-scrollbar { width: 3px; }
 ::-webkit-scrollbar-track { background: var(--page-3); }
 ::-webkit-scrollbar-thumb { background: var(--red); }
+
+/*
+ * Site footer — white surface + hairline grid; `::before` adds soft black radials (same idea as
+ * `body` / features band, different anchors).
+ */
+.site-footer {
+  position: relative;
+}
+.site-footer::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background-image:
+    radial-gradient(ellipse 100% 80% at 6% 88%, rgba(22, 22, 22, 0.05) 0%, transparent 46%),
+    radial-gradient(ellipse 90% 70% at 96% 24%, rgba(22, 22, 22, 0.042) 0%, transparent 44%),
+    radial-gradient(ellipse 65% 95% at 44% -6%, rgba(22, 22, 22, 0.038) 0%, transparent 48%),
+    radial-gradient(ellipse 80% 50% at 72% 58%, rgba(22, 22, 22, 0.032) 0%, transparent 50%),
+    radial-gradient(ellipse 55% 75% at 18% 38%, rgba(22, 22, 22, 0.036) 0%, transparent 47%),
+    radial-gradient(ellipse 110% 40% at 58% 96%, rgba(22, 22, 22, 0.03) 0%, transparent 49%),
+    radial-gradient(ellipse 70% 60% at 88% 72%, rgba(22, 22, 22, 0.034) 0%, transparent 46%);
+  background-repeat: no-repeat;
+  background-size: 100% 100%;
+}
+.site-footer__inner {
+  position: relative;
+  z-index: 1;
+}
+
+/* Footer sits on white (features band); overrides `.bg-grid` cool sheet */
+.site-footer.bg-grid {
+  background-color: #ffffff;
+  background-image:
+    radial-gradient(ellipse 95% 70% at 50% -18%, rgba(255, 255, 255, 0.55), transparent 52%),
+    linear-gradient(rgba(22, 22, 22, 0.038) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(22, 22, 22, 0.038) 1px, transparent 1px);
+  background-size: 100% 100%, 48px 48px, 48px 48px;
+  background-repeat: no-repeat, repeat, repeat;
+}
 
 /* Logo */
 .logo { display: flex; align-items: center; }
@@ -192,12 +266,12 @@ body::after {
   background-repeat: no-repeat;
   background-position: 50% 42%;
   background-size: min(960px, 92vw) auto;
-  opacity: 0.05;
+  opacity: 0.028;
 }
 @media (min-width: 1024px) {
   .features-section__logo-bg {
     background-size: min(1100px, 88vw) auto;
-    opacity: 0.055;
+    opacity: 0.032;
   }
 }
 .features-section__inner {
@@ -206,59 +280,93 @@ body::after {
 }
 
 /*
- * Features (“Built different”) — corner wash + soft black depth (lighter top-right than global
- * `--corner-vignette` so the section stays airy), over a cool sheet + hairline grid.
+ * Features + Spec sheet + compat — reads like the bottom of the hero (flat white), not a second
+ * “hero top” gradient. Copying the full `.hero-above-fold` stack here re-painted #e8e8ea at this
+ * section’s top edge (gray seam under the marquee). We keep only the hero’s subtle 48px grid.
+ *
+ * Atmosphere matches `.hero-above-fold`: `rgba(0,0,0,…)` radials + same corner vignette + one
+ * soft white lift; extra blacks for the taller band. Grid is bottom layer (last in list).
  */
-.features-built-section {
-  background-color: #dde1e9;
+.features-specs-surface {
+  background-color: #ffffff;
   background-image:
-    radial-gradient(ellipse 110% 80% at 92% 6%, rgba(0, 0, 0, 0.3) 0%, transparent 52%),
-    radial-gradient(ellipse 88% 58% at 50% 108%, rgba(0, 0, 0, 0.14) 0%, transparent 52%),
-    radial-gradient(ellipse 95% 70% at 50% -18%, rgba(255, 255, 255, 0.34), transparent 52%),
-    linear-gradient(
-      172deg,
-      rgba(18, 18, 22, 0.07) 0%,
-      transparent 32%,
-      transparent 58%,
-      rgba(12, 12, 14, 0.06) 100%
-    ),
-    linear-gradient(rgba(22, 22, 22, 0.045) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(22, 22, 22, 0.045) 1px, transparent 1px);
-  background-size: auto, auto, 100% 100%, 100% 100%, 52px 52px, 52px 52px;
-  background-repeat: no-repeat, no-repeat, no-repeat, no-repeat, repeat, repeat;
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.48);
+    /* Lighter than `var(--corner-vignette)` (0.42) — same anchor, less weight on flat white */
+    radial-gradient(ellipse 110% 80% at 92% 6%, rgba(0, 0, 0, 0.2) 0%, transparent 52%),
+    radial-gradient(ellipse 80% 55% at 10% 72%, rgba(0, 0, 0, 0.2) 0%, transparent 50%),
+    radial-gradient(ellipse 70% 50% at 50% 32%, rgba(255, 255, 255, 0.5) 0%, transparent 55%),
+    radial-gradient(ellipse 88% 58% at 102% 38%, rgba(0, 0, 0, 0.16) 0%, transparent 46%),
+    radial-gradient(ellipse 92% 52% at -4% 62%, rgba(0, 0, 0, 0.14) 0%, transparent 48%),
+    radial-gradient(ellipse 100% 48% at 50% 100%, rgba(0, 0, 0, 0.13) 0%, transparent 52%),
+    radial-gradient(ellipse 72% 42% at 48% 54%, rgba(0, 0, 0, 0.09) 0%, transparent 56%),
+    linear-gradient(rgba(22, 22, 22, 0.038) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(22, 22, 22, 0.038) 1px, transparent 1px);
+  background-size:
+    auto,
+    auto,
+    auto,
+    100% 100%,
+    100% 100%,
+    100% 100%,
+    100% 100%,
+    48px 48px,
+    48px 48px;
+  background-repeat: no-repeat, no-repeat, no-repeat, no-repeat, no-repeat, no-repeat, repeat, repeat;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.55);
 }
-.features-built-section .features-section__logo-bg {
-  opacity: 0.065;
+
+.features-specs__features {
+  position: relative;
+}
+
+.features-specs__specs {
+  position: relative;
+  overflow: hidden;
+  padding-top: clamp(48px, 8vw, 88px);
+}
+
+/*
+ * Specs atmosphere — DOM sibling between CAD and copy so it always paints above the `<img>`
+ * (pseudo-elements can sort wrong vs composited images in some engines).
+ */
+.specs-section__atmosphere {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  /* Ink only — no white lift or it tints the CAD plate away from page #fff */
+  background-image:
+    radial-gradient(ellipse 90% 72% at 92% 8%, rgba(0, 0, 0, 0.055) 0%, transparent 50%),
+    radial-gradient(ellipse 82% 58% at 8% 68%, rgba(0, 0, 0, 0.05) 0%, transparent 48%),
+    radial-gradient(ellipse 100% 52% at 50% 100%, rgba(0, 0, 0, 0.045) 0%, transparent 52%);
+  background-repeat: no-repeat;
+  background-size: 100% 100%;
+}
+
+/* Designed for Eufy (compat) — same paint as Features/Specs; no second full-bleed section */
+.features-specs__compat {
+  position: relative;
+}
+
+.features-specs-surface .compat-section--embedded {
+  background-color: transparent;
+  padding-top: clamp(40px, 7vw, 88px);
+  padding-bottom: clamp(8px, 2vw, 16px);
+  padding-left: 0;
+  padding-right: 0;
+  min-height: clamp(480px, 78vw, 760px);
+}
+
+.features-specs-surface .features-section__logo-bg {
+  opacity: 0.038;
 }
 @media (min-width: 1024px) {
-  .features-built-section .features-section__logo-bg {
-    opacity: 0.075;
+  .features-specs-surface .features-section__logo-bg {
+    opacity: 0.044;
   }
 }
 
-/* Specs — Eufy Make E1 line drawing as soft watermark (SVG has white plate; multiply drops it out) */
-.specs-section__eufy-bg {
-  position: absolute;
-  inset: 0;
-  z-index: 0;
-  pointer-events: none;
-  background-image: url('/images/eufy_make_e1_cad.svg');
-  background-repeat: no-repeat;
-  background-position: center center;
-  /* `contain` keeps every label/dimension in view; `cover` was cropping the edges off */
-  background-size: contain;
-  opacity: 0.055;
-  mix-blend-mode: multiply;
-}
-@media (min-width: 1024px) {
-  .specs-section__eufy-bg {
-    opacity: 0.07;
-  }
-}
 .specs-section__inner {
   position: relative;
-  z-index: 2;
 }
 
 /* Features: WebGL left, section headline right (stacks headline-first on narrow viewports) */
@@ -438,6 +546,26 @@ body::after {
   .hero-title,
   .display-headline {
     font-size: clamp(2.35rem, 5.2vw, 4.75rem);
+  }
+}
+
+/* Hero headline — line-by-line mask: clip overflow, each row slides up into view */
+.headline-mask-line {
+  display: block;
+  overflow: hidden;
+  padding-bottom: 0.05em;
+}
+.headline-mask-line__inner {
+  display: block;
+  transform: translate3d(0, 0, 0);
+  animation: headline-mask-line-in 0.78s cubic-bezier(0.22, 1, 0.32, 1) backwards;
+}
+@keyframes headline-mask-line-in {
+  from {
+    transform: translate3d(0, 108%, 0);
+  }
+  to {
+    transform: translate3d(0, 0, 0);
   }
 }
 
@@ -654,6 +782,129 @@ body::after {
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.55);
 }
 
+/* Standalone contact page */
+.contact-page {
+  min-height: min(100vh, 880px);
+  padding: 88px 22px 72px;
+  box-sizing: border-box;
+}
+.contact-page__inner {
+  width: 100%;
+  max-width: 560px;
+  margin: 0 auto;
+}
+.contact-page__title {
+  font-size: clamp(2rem, 6vw, 3rem);
+  color: var(--ink);
+  margin-bottom: 14px;
+}
+.contact-page__lede {
+  color: var(--ink-muted);
+  line-height: 1.7;
+  font-size: 16px;
+  margin-bottom: 36px;
+  max-width: 42rem;
+}
+
+.contact-form {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+.contact-form > .contact-field {
+  margin: 0 0 22px;
+}
+.contact-field--honeypot {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+.contact-label {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  color: var(--ink);
+  margin-bottom: 8px;
+}
+.contact-req {
+  color: var(--red);
+  font-weight: 700;
+}
+.contact-input,
+.contact-textarea,
+.contact-select {
+  width: 100%;
+  box-sizing: border-box;
+  font: inherit;
+  font-size: 15px;
+  color: var(--ink);
+  background: rgba(255, 255, 255, 0.72);
+  border: 1px solid var(--border-strong);
+  border-radius: 10px;
+  padding: 12px 14px;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+.contact-select {
+  cursor: pointer;
+  appearance: none;
+  background-image: linear-gradient(45deg, transparent 50%, var(--ink-muted) 50%),
+    linear-gradient(135deg, var(--ink-muted) 50%, transparent 50%);
+  background-position: calc(100% - 18px) calc(50% + 3px), calc(100% - 13px) calc(50% + 3px);
+  background-size: 5px 5px, 5px 5px;
+  background-repeat: no-repeat;
+  padding-right: 40px;
+}
+.contact-textarea {
+  resize: vertical;
+  min-height: 140px;
+  line-height: 1.55;
+}
+.contact-input:focus,
+.contact-textarea:focus,
+.contact-select:focus {
+  outline: none;
+  border-color: rgba(229, 52, 42, 0.45);
+  box-shadow: 0 0 0 3px rgba(229, 52, 42, 0.12);
+}
+.contact-form__error {
+  margin: 0 0 18px;
+  padding: 12px 14px;
+  font-size: 14px;
+  color: #8a1c18;
+  background: rgba(229, 52, 42, 0.08);
+  border: 1px solid rgba(229, 52, 42, 0.22);
+  border-radius: 10px;
+}
+.contact-form__actions {
+  margin-top: 6px;
+}
+.contact-form--success {
+  padding: 28px 24px;
+  border-radius: 14px;
+  border: 1px solid var(--border-strong);
+  background: rgba(255, 255, 255, 0.55);
+  box-shadow: 0 12px 40px rgba(22, 22, 22, 0.06);
+}
+.contact-form--success .contact-form__success-title {
+  font-size: 1.35rem;
+  color: var(--ink);
+  margin: 0 0 10px;
+}
+.contact-form--success .contact-form__success-body {
+  margin: 0;
+  color: var(--ink-muted);
+  line-height: 1.65;
+  font-size: 15px;
+}
+
 /* Hero: color + depth up top, resolves to clean white toward the bottom */
 .hero-above-fold {
   /* Grid keeps the ticker on the last row of a full-viewport shell; tall hero scrolls inside main */
@@ -676,7 +927,11 @@ body::after {
     linear-gradient(90deg, rgba(22, 22, 22, 0.038) 1px, transparent 1px);
   background-size: auto, auto, auto, auto, 48px 48px, 48px 48px;
   background-repeat: no-repeat, no-repeat, no-repeat, no-repeat, repeat, repeat;
-  background-attachment: fixed, scroll, scroll, scroll, scroll, scroll;
+}
+
+/* Hero ticker omitted (hero.marqueeEnabled: false) — single row fills viewport */
+.hero-above-fold--no-marquee {
+  grid-template-rows: minmax(0, 1fr);
 }
 
 /*
@@ -710,17 +965,6 @@ body::after {
   /* Keep texture in the upper “atmosphere”; let the floor read as plain white */
   -webkit-mask-image: linear-gradient(to bottom, #000 0%, #000 52%, rgba(0, 0, 0, 0.45) 72%, transparent 100%);
   mask-image: linear-gradient(to bottom, #000 0%, #000 52%, rgba(0, 0, 0, 0.45) 72%, transparent 100%);
-}
-
-@keyframes hero-mask-reveal {
-  from {
-    -webkit-clip-path: polygon(0 0, 0 0, 0 100%, 0 100%);
-    clip-path: polygon(0 0, 0 0, 0 100%, 0 100%);
-  }
-  to {
-    -webkit-clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%);
-    clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%);
-  }
 }
 
 .hero-above-fold__main {
@@ -786,14 +1030,6 @@ body::after {
   display: flex;
 }
 
-/* Mask runs on inner block so flex + min-height quirks don’t skip the first paint */
-.hero-above-fold__reveal {
-  transform: translateZ(0);
-  -webkit-backface-visibility: hidden;
-  backface-visibility: hidden;
-  animation: hero-mask-reveal 0.72s cubic-bezier(0.22, 1, 0.36, 1) 0.14s both;
-}
-
 /* Full-bleed ticker: bottom grid row, flush horizontal strip */
 .hero-marquee {
   position: relative;
@@ -806,6 +1042,16 @@ body::after {
   overflow: hidden;
   background: #0a0a0a;
   box-sizing: border-box;
+}
+
+/* Optional: fade entire strip on the left ~half (mask is relative to full ticker width) */
+.hero-marquee--fade-left {
+  -webkit-mask-image: linear-gradient(to right, transparent 0%, transparent 38%, #000 62%, #000 100%);
+  mask-image: linear-gradient(to right, transparent 0%, transparent 38%, #000 62%, #000 100%);
+  -webkit-mask-size: 100% 100%;
+  mask-size: 100% 100%;
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
 }
 
 /* Pin texture — still reads as “mat surface” on light UI */
@@ -1018,7 +1264,6 @@ body::after {
   z-index: 100;
   background-color: color-mix(in srgb, var(--nav-chrome) 86%, transparent);
   background-image: var(--corner-vignette);
-  background-attachment: fixed;
   background-repeat: no-repeat;
   backdrop-filter: blur(18px) saturate(1.12);
   -webkit-backdrop-filter: blur(18px) saturate(1.12);
@@ -1031,7 +1276,6 @@ body::after {
 .site-nav.site-nav--scrolled {
   background-color: color-mix(in srgb, var(--nav-chrome) 97%, transparent);
   background-image: var(--corner-vignette);
-  background-attachment: fixed;
   background-repeat: no-repeat;
   border-bottom-color: rgba(22, 22, 22, 0.16);
   box-shadow:

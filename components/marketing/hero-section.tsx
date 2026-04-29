@@ -4,16 +4,19 @@ import Link from 'next/link';
 import type { HeroContent } from '@/lib/cms/marketing-content';
 import { normalizeMultiline } from '@/lib/cms/marketing-content';
 
-import { HeadlineFromSegments } from './headline-from-segments';
+import { HeroHeadlineReplay } from './hero-headline-replay';
 
 type Props = { hero: HeroContent };
 
 export function HeroSection({ hero }: Props) {
+  const showMarquee = hero.marqueeEnabled !== false;
+
   return (
-    <section className="bg-grid hero-above-fold">
+    <section
+      className={`bg-grid hero-above-fold${showMarquee ? '' : ' hero-above-fold--no-marquee'}`}
+    >
       <div className="hero-above-fold__main hero-main-inner">
-        <div className="hero-above-fold__reveal">
-          <div className="hero-layout-grid">
+        <div className="hero-layout-grid">
             <div className="hero-stack-copy">
               <div
                 className="hero-eyebrow-wrap"
@@ -54,8 +57,7 @@ export function HeroSection({ hero }: Props) {
               </div>
               <div className="hero-eyebrow-spacer" aria-hidden />
 
-              <HeadlineFromSegments
-                as="h1"
+              <HeroHeadlineReplay
                 segments={hero.titleSegments}
                 className="hero-title font-display font-extrabold leading-none"
                 style={{ marginBottom: 26, color: 'var(--ink)' }}
@@ -90,12 +92,14 @@ export function HeroSection({ hero }: Props) {
               </div>
 
               <div
-                className="flex"
+                className="flex hero-stats-strip"
                 style={{
-                  border: '1px solid var(--border)',
+                  border: '1px solid rgba(22, 22, 22, 0.1)',
                   overflow: 'hidden',
                   borderRadius: 4,
-                  background: 'var(--card)',
+                  background: 'rgba(255, 255, 255, 0.38)',
+                  backdropFilter: 'blur(12px)',
+                  WebkitBackdropFilter: 'blur(12px)',
                 }}
               >
                 {hero.stats.map((stat, idx) => (
@@ -214,27 +218,34 @@ export function HeroSection({ hero }: Props) {
               </div>
             </div>
           </div>
-        </div>
       </div>
 
-      <div
-        className={hero.marqueeScroll === false ? 'hero-marquee hero-marquee--static' : 'hero-marquee'}
-        aria-hidden
-      >
-        <div className="marquee-track" style={{ display: 'inline-block' }}>
-          <span
-            style={{
-              fontFamily: 'var(--font-barlow-condensed), sans-serif',
-              fontWeight: 650,
-              fontSize: 13,
-              letterSpacing: '0.25em',
-              textTransform: 'uppercase',
-              color: 'rgba(255,255,255,0.9)',
-            }}
-            dangerouslySetInnerHTML={{ __html: hero.marquee }}
-          />
+      {showMarquee ? (
+        <div
+          className={[
+            'hero-marquee',
+            hero.marqueeScroll === false ? 'hero-marquee--static' : '',
+            hero.marqueeFadeLeft ? 'hero-marquee--fade-left' : '',
+          ]
+            .filter(Boolean)
+            .join(' ')}
+          aria-hidden
+        >
+          <div className="marquee-track" style={{ display: 'inline-block' }}>
+            <span
+              style={{
+                fontFamily: 'var(--font-barlow-condensed), sans-serif',
+                fontWeight: 650,
+                fontSize: 13,
+                letterSpacing: '0.25em',
+                textTransform: 'uppercase',
+                color: 'rgba(255,255,255,0.9)',
+              }}
+              dangerouslySetInnerHTML={{ __html: hero.marquee }}
+            />
+          </div>
         </div>
-      </div>
+      ) : null}
     </section>
   );
 }

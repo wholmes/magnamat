@@ -50,18 +50,11 @@ function filamentTagStyle(label: string): CSSProperties {
   };
 }
 
-export function FeaturesSection({ features, printPresets }: Props) {
+/** Features block body — wrapped by `FeaturesSpecsSection` (single surface) or usable alone. */
+export function FeaturesSectionContent({ features, printPresets }: Props) {
   const f = features;
   return (
-    <section
-      id="features"
-      className="features-built-section"
-      style={{
-        padding: '20px 24px 110px',
-        position: 'relative',
-        overflow: 'hidden',
-      }}
-    >
+    <>
       <div className="features-section__logo-bg" aria-hidden />
 
       <div
@@ -160,30 +153,47 @@ export function FeaturesSection({ features, printPresets }: Props) {
               className="display-headline font-display font-extrabold leading-none"
               style={{ color: 'var(--ink)', marginBottom: 0 }}
             />
+            {f.introBody.trim() ? (
+              <p
+                className="features-intro-body"
+                style={{
+                  marginTop: 22,
+                  marginBottom: 0,
+                  maxWidth: 'min(36em, 520px)',
+                  color: 'var(--ink-muted)',
+                  fontSize: 'clamp(15px, 3.5vw, 17px)',
+                  lineHeight: 1.65,
+                }}
+              >
+                {normalizeMultiline(f.introBody)}
+              </p>
+            ) : null}
           </header>
         </div>
 
-        <div className="features-hero-split-after">
-          <div className="features-view-mode-wrap">
-            <div className="features-print-presets" role="toolbar" aria-label="Jig preview shape">
-              <button
-                type="button"
-                data-features-view-mode="mug"
-                className="features-print-presets__btn features-print-presets__btn--active"
-              >
-                Mug
-              </button>
-              <button type="button" data-features-view-mode="skyscraper" className="features-print-presets__btn">
-                3D Model
-              </button>
+        {features.showPrintPresetToolbar === true ? (
+          <div className="features-hero-split-after">
+            <div className="features-view-mode-wrap">
+              <div className="features-print-presets" role="toolbar" aria-label="Jig preview shape">
+                <button
+                  type="button"
+                  data-features-view-mode="mug"
+                  className="features-print-presets__btn features-print-presets__btn--active"
+                >
+                  Mug
+                </button>
+                <button type="button" data-features-view-mode="skyscraper" className="features-print-presets__btn">
+                  3D Model
+                </button>
+              </div>
+              <p id="features-view-caption" className="features-print-caption">
+                {printPresets[0]?.caption
+                  ? `Mug · ${printPresets[0].caption}`
+                  : 'Mug wrap · demo art from first chrome preset.'}
+              </p>
             </div>
-            <p id="features-view-caption" className="features-print-caption">
-              {printPresets[0]?.caption
-                ? `Mug · ${printPresets[0].caption}`
-                : 'Mug wrap · demo art from first chrome preset.'}
-            </p>
           </div>
-        </div>
+        ) : null}
 
         <div className="grid grid-cols-1 md:grid-cols-3 features-cards-grid">
           <div className="f-card reveal">
@@ -356,6 +366,6 @@ export function FeaturesSection({ features, printPresets }: Props) {
           </div>
         </div>
       </div>
-    </section>
+    </>
   );
 }

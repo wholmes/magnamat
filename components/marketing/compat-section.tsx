@@ -5,9 +5,10 @@ import { HeadlineFromSegments } from './headline-from-segments';
 
 type Props = { compat: CompatContent };
 
-export function CompatSection({ compat: c }: Props) {
+/** Rings + slab — rendered inside `FeaturesSpecsSection` under `#compat`. */
+export function CompatSectionContent({ compat: c }: Props) {
   return (
-    <section id="compat" className="compat-section">
+    <>
       <div className="compat-rings" aria-hidden>
         <div className="ring" style={{ width: 700, height: 700, borderWidth: 1, borderColor: 'rgba(0,0,0,0.055)' }} />
         <div className="ring" style={{ width: 530, height: 530, borderWidth: 1, borderColor: 'rgba(0,0,0,0.07)' }} />
@@ -51,25 +52,25 @@ export function CompatSection({ compat: c }: Props) {
               transitionDelay: '0.15s',
             }}
           >
-          {c.badges.map((b, i) => (
-            <div key={`${b.label}-${i}`} className="compat-badge">
-              {b.status === 'check' ? (
-                <span style={{ color: 'var(--blue)', fontSize: 18, fontWeight: 700 }}>✓</span>
-              ) : (
-                <span style={{ color: 'var(--ink-faint)', fontSize: 18 }}>○</span>
-              )}
-              <span
-                style={{
-                  fontFamily: 'var(--font-space-mono), monospace',
-                  fontSize: 12,
-                  color: b.status === 'check' ? 'var(--ink-muted)' : 'var(--ink-faint)',
-                  letterSpacing: '0.08em',
-                }}
-              >
-                {b.label}
-              </span>
-            </div>
-          ))}
+            {c.badges.map((b, i) => (
+              <div key={`${b.label}-${i}`} className="compat-badge">
+                {b.status === 'check' ? (
+                  <span style={{ color: 'var(--blue)', fontSize: 18, fontWeight: 700 }}>✓</span>
+                ) : (
+                  <span style={{ color: 'var(--ink-faint)', fontSize: 18 }}>○</span>
+                )}
+                <span
+                  style={{
+                    fontFamily: 'var(--font-space-mono), monospace',
+                    fontSize: 12,
+                    color: b.status === 'check' ? 'var(--ink-muted)' : 'var(--ink-faint)',
+                    letterSpacing: '0.08em',
+                  }}
+                >
+                  {b.label}
+                </span>
+              </div>
+            ))}
           </div>
 
           <div className="reveal compat-slab__cta" style={{ transitionDelay: '0.3s' }}>
@@ -85,6 +86,6 @@ export function CompatSection({ compat: c }: Props) {
           </div>
         </div>
       </div>
-    </section>
+    </>
   );
 }

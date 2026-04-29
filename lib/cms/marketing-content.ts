@@ -24,8 +24,12 @@ export type HeroContent = {
   marquee: string;
   /** Second ticker: horizontal strip on the hero / features seam (below the tilted hero marquee). */
   marqueeStraight: string;
+  /** When false, the tilted hero bottom ticker is not rendered. Default true. */
+  marqueeEnabled: boolean;
   /** When false, hero ticker copy stays fixed (no horizontal scroll). Default true. */
   marqueeScroll: boolean;
+  /** When true, left side of the ticker strip fades to fully transparent (viewport-relative mask). Default false. */
+  marqueeFadeLeft: boolean;
 };
 
 export type FeatureCardPins = {
@@ -53,6 +57,10 @@ export type FeatureCardMaterials = {
 export type FeaturesContent = {
   sectionLabel: string;
   headlineSegments: TextSegment[];
+  /** Short paragraph under the features headline (newlines OK; trimmed empty hides in UI). */
+  introBody: string;
+  /** When true, show Mug / 3D Model preset buttons and the caption under the features 3D viewer. Default false. */
+  showPrintPresetToolbar: boolean;
   cardPins: FeatureCardPins;
   cardFlex: FeatureCardFlex;
   cardMaterials: FeatureCardMaterials;
@@ -126,7 +134,9 @@ export const DEFAULT_MARKETING_PAGE: MarketingPageContent = {
       'MAGNETIC MICRO-PIN MATRIX &nbsp;·&nbsp; FLEX STEEL SUBSTRATE &nbsp;·&nbsp; EUFY MAKER COMPATIBLE &nbsp;·&nbsp; 250+ CONTACT POINTS &nbsp;·&nbsp; 255°C RATED &nbsp;·&nbsp; PLA · PETG · ABS · TPU · ASA &nbsp;·&nbsp; 0.01mm TOLERANCE &nbsp;·&nbsp; 1,000+ CYCLE RATING &nbsp;·&nbsp; MAGNETIC MICRO-PIN MATRIX &nbsp;·&nbsp; FLEX STEEL SUBSTRATE &nbsp;·&nbsp; EUFY MAKER COMPATIBLE &nbsp;·&nbsp; 250+ CONTACT POINTS &nbsp;·&nbsp; 255°C RATED &nbsp;·&nbsp; PLA · PETG · ABS · TPU · ASA &nbsp;·&nbsp; 0.01mm TOLERANCE &nbsp;·&nbsp; 1,000+ CYCLE RATING &nbsp;·&nbsp;',
     marqueeStraight:
       'ENGINEERING-GRADE FLATNESS &nbsp;·&nbsp; FIELD-TESTED RELEASE &nbsp;·&nbsp; EUFY MAKER FITMENT &nbsp;·&nbsp; SHOP-FIRST WORKFLOW &nbsp;·&nbsp; REPEATABLE Z HEIGHT &nbsp;·&nbsp; NO AQUA NET / GLUE &nbsp;·&nbsp; COLD PLATE SAFE &nbsp;·&nbsp; ENGINEERING-GRADE FLATNESS &nbsp;·&nbsp; FIELD-TESTED RELEASE &nbsp;·&nbsp; EUFY MAKER FITMENT &nbsp;·&nbsp; SHOP-FIRST WORKFLOW &nbsp;·&nbsp; REPEATABLE Z HEIGHT &nbsp;·&nbsp; NO AQUA NET / GLUE &nbsp;·&nbsp; COLD PLATE SAFE &nbsp;·&nbsp;',
+    marqueeEnabled: true,
     marqueeScroll: true,
+    marqueeFadeLeft: false,
   },
   features: {
     sectionLabel: '// 01 — Engineering',
@@ -134,6 +144,9 @@ export const DEFAULT_MARKETING_PAGE: MarketingPageContent = {
       { text: 'Built', tone: 'ink' },
       { text: 'different.', tone: 'blue' },
     ],
+    introBody:
+      'Engineered for real workflows — magnetic micro-pins for even hold, flex steel for a clean release, and a surface tuned for common filaments without glue or babysitting.',
+    showPrintPresetToolbar: false,
     cardPins: {
       title: 'Micro-Pin Matrix',
       body: '250+ individually tuned magnetic contact pins create a distributed grip field with zero dead zones. Perfect, even adhesion across the full build area — edge to edge.',
@@ -195,7 +208,7 @@ export const DEFAULT_MARKETING_PAGE: MarketingPageContent = {
     links: [
       { label: 'Privacy', href: '#' },
       { label: 'Terms', href: '#' },
-      { label: 'Contact', href: '#' },
+      { label: 'Contact', href: '/contact' },
     ],
   },
 };
@@ -275,7 +288,9 @@ function pickHero(p: unknown, d: HeroContent): HeroContent {
     canvasDragHint: pickString(o.canvasDragHint, d.canvasDragHint),
     marquee: pickString(o.marquee, d.marquee),
     marqueeStraight: pickString(o.marqueeStraight, d.marqueeStraight),
+    marqueeEnabled: pickBoolean(o.marqueeEnabled, d.marqueeEnabled),
     marqueeScroll: pickBoolean(o.marqueeScroll, d.marqueeScroll),
+    marqueeFadeLeft: pickBoolean(o.marqueeFadeLeft, d.marqueeFadeLeft),
   };
 }
 
@@ -325,6 +340,8 @@ function pickFeatures(p: unknown, d: FeaturesContent): FeaturesContent {
   return {
     sectionLabel: pickString(o.sectionLabel, d.sectionLabel),
     headlineSegments: pickSegments(o.headlineSegments, d.headlineSegments),
+    introBody: pickString(o.introBody, d.introBody),
+    showPrintPresetToolbar: pickBoolean(o.showPrintPresetToolbar, d.showPrintPresetToolbar),
     cardPins: pickFeatureCardPins(o.cardPins, d.cardPins),
     cardFlex: pickFeatureCardFlex(o.cardFlex, d.cardFlex),
     cardMaterials: pickFeatureCardMaterials(o.cardMaterials, d.cardMaterials),

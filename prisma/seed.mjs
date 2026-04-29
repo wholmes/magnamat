@@ -12,6 +12,7 @@ async function main() {
           { label: 'Features', href: '/features' },
           { label: 'Specs', href: '/specs' },
           { label: 'Compatible', href: '/compat' },
+          { label: 'Contact', href: '/contact' },
         ],
         youtubeVideoId: 'M7lc1UVf-VE',
         commerce: {
