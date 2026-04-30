@@ -3,6 +3,7 @@
  * Once pinned under the nav, the strip stays fixed while you keep scrolling down. It only returns
  * to in-flow when you have scrolled back up by `UNPIN_SCROLL_PX` from the deepest scroll **and**
  * the hero spacer has moved back to the nav band so the ticker does not jump off-screen.
+ * Fast scroll: we also pin if the marquee crosses the nav line between rAF frames (prev vs current `top`).
  */
 const MQ = '(min-width: 1024px)';
 /** Pixels scrolled back up from the max scroll-after-pin before we *may* return to in-flow marquee */
@@ -90,6 +91,8 @@ export function initHeroMarqueeSticky(): () => void {
     let pinned = false;
     /** Greatest `scrollY` seen while pinned (starts at scroll when pin engaged). */
     let peakScrollSincePin = 0;
+    /** Previous marquee `getBoundingClientRect().top` while unpinned — catches fast scroll past the nav line. */
+    let prevMarqueeTop: number | null = null;
 
     const navHeight = () => Math.ceil(nav.getBoundingClientRect().height);
 
@@ -98,6 +101,7 @@ export function initHeroMarqueeSticky(): () => void {
     const applyPin = (next: boolean) => {
       if (next) {
         pinned = true;
+        prevMarqueeTop = null;
         peakScrollSincePin = scrollY();
         const h = Math.max(1, Math.round(marquee.getBoundingClientRect().height));
         host.style.height = `${h}px`;
@@ -105,6 +109,7 @@ export function initHeroMarqueeSticky(): () => void {
         document.documentElement.style.setProperty('--site-nav-pin-top', `${navHeight()}px`);
       } else {
         pinned = false;
+        prevMarqueeTop = null;
         peakScrollSincePin = 0;
         host.style.height = '';
         marquee.classList.remove('is-fixed-under-nav');
@@ -141,11 +146,16 @@ export function initHeroMarqueeSticky(): () => void {
         return;
       }
 
-      /* Not pinned: engage only while hero still intersects the viewport (avoid ghost-pin off-screen). */
+      /* Not pinned: normal case + cross-frame catch-up when wheel/trackpad skips the nav line. */
       const heroStillRelevant = heroRect.bottom > nh + 20;
-      const shouldPin = heroStillRelevant && mRect.top <= nh + 1;
+      const crossedNavDown =
+        prevMarqueeTop !== null && prevMarqueeTop > nh + 1 && mRect.top <= nh + 1;
+      const shouldPin =
+        (heroStillRelevant && mRect.top <= nh + 1) || (crossedNavDown && mRect.bottom > nh - 2);
       if (shouldPin) {
         applyPin(true);
+      } else {
+        prevMarqueeTop = mRect.top;
       }
     };
 
