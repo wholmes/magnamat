@@ -217,20 +217,31 @@ magnamat/
 
 ## Database (PostgreSQL)
 
-The app uses **PostgreSQL** via Prisma so you can use **Neon** in production and a **local Postgres** (Docker, Homebrew, or a Neon dev branch) for development.
+The app uses **PostgreSQL** via Prisma. **Use a local database for day-to-day development** (Docker in this repo, or Homebrew Postgres). Pointing **`next dev`** at a remote Neon branch is brittle: cold starts, pooler timeouts, and network blips surface as random “can’t reach database” errors during CMS saves.
 
-- **`DATABASE_URL`** — only required variable in `prisma/schema.prisma`. Use your normal Postgres or Neon connection string here.
-- **Neon + connection pooling:** if `prisma migrate` (not `db push`) ever errors against a pooled URL, run that command once using Neon’s **direct** (non-pooler) connection string, or reintroduce `directUrl` in the Prisma schema per [Neon’s Prisma guide](https://neon.tech/docs/guides/prisma).
+- **`DATABASE_URL`** — required in `prisma/schema.prisma`. For local work, keep it on **127.0.0.1** (see `.env.example`, default **5434** to match `docker-compose.yml`).
+- **Production / Vercel:** set `DATABASE_URL` in the project environment to Neon or any managed Postgres. That string does not belong in the `.env` you use for local `next dev` unless you are deliberately debugging against production data.
+- **Neon + migrations:** if `prisma migrate deploy` errors against a **pooled** Neon URL, run it once with Neon’s **direct** (non-pooler) connection string, or add `directUrl` per [Neon’s Prisma guide](https://neon.tech/docs/guides/prisma).
 
-Example local Postgres with Docker:
+**Recommended local stack** (matches `.env.example`):
+
+```bash
+npm run db:up
+npm run db:migrate:deploy
+npm run db:seed
+```
+
+If **`port is already allocated`** on **5434**, something else is using that port (old container, another Postgres). Either stop it (`docker ps`, `docker stop …`) or pick a free port in **`.env`**: set **`POSTGRES_HOST_PORT`** and **`DATABASE_URL`** to the same port (for example `55434`), then run **`npm run db:up`** again. Compose reads **`.env`** in the repo root for `POSTGRES_HOST_PORT`.
+
+Optional one-off container on port **5432** instead:
 
 ```bash
 docker run --name magnamat-pg -e POSTGRES_PASSWORD=postgres -e POSTGRES_DB=magnamat -p 5432:5432 -d postgres:16
 ```
 
-Or use **`docker compose up -d`** with this repo’s `docker-compose.yml` (Postgres on **5434** — see `.env.docker.example`).
+If you use **5432**, set `DATABASE_URL` in `.env` accordingly.
 
-Then set `DATABASE_URL` in `.env` to point at `127.0.0.1:5432` (see `.env.example`).
+**Prisma CLI + separate env file:** `npm run db:migrate:deploy:local` and `npm run db:seed:local` load **`.env.docker`** (see `.env.docker.example`). That is optional; if `DATABASE_URL` in `.env` already points at the compose DB on **5434**, plain `db:migrate:deploy` / `db:seed` are enough.
 
 ---
 
@@ -249,10 +260,11 @@ There is no third-party CMS product — only this repo’s Prisma models + admin
 ### Database & migrations
 
 - Prefer **`npm run db:migrate:deploy`** (or **`db:migrate:dev`** locally) over `db push` for anything that should ship to production.
+- **`P3015` / “Could not find the migration file at migration.sql”:** every folder under **`prisma/migrations/`** (except `migration_lock.toml`) must contain **`migration.sql`**. Remove stray empty directories (e.g. an aborted `migrate dev` folder). If files are missing, run **`git checkout -- prisma/migrations`**. After a failed deploy, reset the local DB volume if needed: **`docker compose down -v`** then **`npm run db:up`** and migrate again.
 - If the app errors with **`SeoSettings.noIndex` does not exist** (older DB from `db push`), run **`npm run db:fix-seo-noindex`** once.
 - If core tables are missing (e.g. seed fails with **`MarketingPage` does not exist**), run **`npm run db:bootstrap-db`** once, or **`npm run db:ensure-core-tables`** then **`npm run db:seed`**. (`db:fix-hero-scene-camera` is an alias for `db:ensure-core-tables`.)
 - If **`FeaturesSceneCamera` does not exist** (admin save on Features 3D camera fails), run **`npm run db:migrate:deploy`** on that database, or once: **`npm run db:fix-features-scene-camera`** (idempotent `CREATE TABLE IF NOT EXISTS`).
-- **Docker Postgres on port 5434:** `npm run db:up` (see `.env.docker.example` → copy to `.env.docker`), then `npm run db:migrate:deploy:local` and `npm run db:seed:local`.
+- **Docker Postgres on port 5434:** `npm run db:up`, then `npm run db:migrate:deploy` and `npm run db:seed` with `DATABASE_URL` in `.env` pointing at **5434** (default in `.env.example`). The `db:*:local` scripts are for a separate **`.env.docker`** file only if you use that workflow.
 - **Upgrading an older DB** that was created with `db push` only: add missing columns to match `prisma/schema.prisma`, then **`npx prisma migrate resolve`** / baseline per [Prisma docs](https://www.prisma.io/docs/guides/migrate/developing-with-prisma-migrate/baselining), or reset the database and run **`npm run db:migrate:deploy`** on an empty instance.
 
 **Internal UTM helpers** for future nav/CTA work: `lib/utm.ts` (`appendUtmToUrl`).
@@ -270,15 +282,18 @@ There is no third-party CMS product — only this repo’s Prisma models + admin
 
 ## Local development
 
-**Next.js app:** copy `.env.example` to `.env`, fill Postgres URLs and CMS secrets, then migrate and seed.
+**Next.js app:** copy `.env.example` to `.env`, set CMS secrets, start **local** Postgres, then migrate and seed.
 
 ```bash
 cp .env.example .env
-# edit .env — DATABASE_URL, CMS_ADMIN_PASSWORD, CMS_SESSION_SECRET
+# edit .env — CMS_ADMIN_PASSWORD, CMS_SESSION_SECRET (DATABASE_URL defaults to Docker on 5434)
+npm run db:up
 npm run db:migrate:deploy
 npm run db:seed
 npm run dev
 ```
+
+Restart **`next dev`** whenever you change `DATABASE_URL` in `.env`.
 
 **Stale `.next` / missing chunk errors** (e.g. `Cannot find module './124.js'`): stop all dev and start processes, then run **`npm run clean`** and **`npm run build`** (or **`npm run dev:fresh`** to clean and start dev). Avoid running **`next dev`** and **`next build`** against the same `.next` folder at the same time.
 

@@ -4,16 +4,49 @@ import Link from 'next/link';
 import type { HeroContent } from '@/lib/cms/marketing-content';
 import { normalizeMultiline } from '@/lib/cms/marketing-content';
 
+import { HeroMarqueeStickyActivator } from '@/components/hero-marquee-sticky-activator';
+
 import { HeroHeadlineReplay } from './hero-headline-replay';
 
 type Props = { hero: HeroContent };
 
 export function HeroSection({ hero }: Props) {
   const showMarquee = hero.marqueeEnabled !== false;
+  /* Truthy so CMS / hand-edited JSON (`true`, `"true"`, `1`) all enable; only explicit falsy opts out */
+  const stickyDesktopMarquee = showMarquee && Boolean(hero.marqueeStickyDesktop);
+
+  const marqueeShellClasses = [
+    'hero-marquee',
+    hero.marqueeScroll === false ? 'hero-marquee--static' : '',
+    hero.marqueeFadeLeft ? 'hero-marquee--fade-left' : '',
+    stickyDesktopMarquee ? 'hero-marquee--sticky-desktop' : '',
+  ]
+    .filter(Boolean)
+    .join(' ');
+
+  const marqueeShell = (
+    <div className={marqueeShellClasses} aria-hidden>
+      <div className="hero-marquee__clip">
+        <div className="marquee-track" style={{ display: 'inline-block' }}>
+          <span
+            style={{
+              fontFamily: 'var(--font-barlow-condensed), sans-serif',
+              fontWeight: 650,
+              fontSize: 13,
+              letterSpacing: '0.25em',
+              textTransform: 'uppercase',
+              color: 'rgba(255,255,255,0.9)',
+            }}
+            dangerouslySetInnerHTML={{ __html: hero.marquee }}
+          />
+        </div>
+      </div>
+    </div>
+  );
 
   return (
     <section
-      className={`bg-grid hero-above-fold${showMarquee ? '' : ' hero-above-fold--no-marquee'}`}
+      className={`bg-grid hero-above-fold${showMarquee ? '' : ' hero-above-fold--no-marquee'}${stickyDesktopMarquee ? ' hero-above-fold--marquee-sticky-desktop' : ''}`}
     >
       <div className="hero-above-fold__main hero-main-inner">
         <div className="hero-layout-grid">
@@ -221,30 +254,14 @@ export function HeroSection({ hero }: Props) {
       </div>
 
       {showMarquee ? (
-        <div
-          className={[
-            'hero-marquee',
-            hero.marqueeScroll === false ? 'hero-marquee--static' : '',
-            hero.marqueeFadeLeft ? 'hero-marquee--fade-left' : '',
-          ]
-            .filter(Boolean)
-            .join(' ')}
-          aria-hidden
-        >
-          <div className="marquee-track" style={{ display: 'inline-block' }}>
-            <span
-              style={{
-                fontFamily: 'var(--font-barlow-condensed), sans-serif',
-                fontWeight: 650,
-                fontSize: 13,
-                letterSpacing: '0.25em',
-                textTransform: 'uppercase',
-                color: 'rgba(255,255,255,0.9)',
-              }}
-              dangerouslySetInnerHTML={{ __html: hero.marquee }}
-            />
+        stickyDesktopMarquee ? (
+          <div className="hero-marquee-sticky-host">
+            {marqueeShell}
+            <HeroMarqueeStickyActivator />
           </div>
-        </div>
+        ) : (
+          marqueeShell
+        )
       ) : null}
     </section>
   );

@@ -2,8 +2,8 @@ generator client {
   provider = "prisma-client-js"
 }
 
-/// For Neon: use a pooled `DATABASE_URL` at runtime; run `prisma migrate` with a direct
-/// (non-`-pooler`) URL (swap env temporarily or add `directUrl` + `DIRECT_URL` per Prisma docs).
+/// Local dev: point `DATABASE_URL` at Docker/Homebrew Postgres (see `.env.example`).
+/// Production: Neon or any Postgres — pooled URL at runtime; use a direct URL for `migrate` if the pooler complains.
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")

@@ -10,6 +10,18 @@ import {
 } from './cms/hero-scene-camera';
 import { DEFAULT_FEATURES_PRINT_PRESETS } from './cms/defaults';
 
+/** One `console.info` per tab session so dev + HMR do not spam the same tuning hint. */
+function logMagnamatSessionHint(storageKey: string, message: string) {
+  if (typeof window === 'undefined') return;
+  try {
+    if (sessionStorage.getItem(storageKey)) return;
+    sessionStorage.setItem(storageKey, '1');
+  } catch {
+    /* sessionStorage unavailable (private mode, etc.) */
+  }
+  console.info(message);
+}
+
 const __g =
   typeof globalThis !== 'undefined'
     ? globalThis
@@ -1483,7 +1495,8 @@ function startScene(container, canvas, options = {}) {
         return full;
       },
     };
-    console.info(
+    logMagnamatSessionHint(
+      'magnamat-hint-hero-tune',
       '[magnamat] Quick tune: ?adjust=1 or ?adjustHero=1 — panel — or __magnamatScene.saveLockedView() / saveDefaultZoom() / copyJsonForCms() / logDefaultAngle()'
     );
     installViewTuner(container, { camera, controls, matGroup, isAdjustMode, tunerKind: 'hero' });
@@ -1553,7 +1566,8 @@ function startScene(container, canvas, options = {}) {
         return full;
       },
     };
-    console.info(
+    logMagnamatSessionHint(
+      'magnamat-hint-features-tune',
       '[magnamat] Features 3D tune: ?adjustFeatures=1 — __magnamatSceneFeatures.saveLockedView() / copyJsonForCms() / logDefaultAngle()'
     );
     installViewTuner(container, {

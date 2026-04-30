@@ -30,6 +30,12 @@ export type HeroContent = {
   marqueeScroll: boolean;
   /** When true, left side of the ticker strip fades to fully transparent (viewport-relative mask). Default false. */
   marqueeFadeLeft: boolean;
+  /**
+   * When true (and the hero marquee is shown), on viewports ≥1024px the bottom ticker uses `position: sticky`
+   * so it pins just under the fixed nav while the rest of the page scrolls. No effect on smaller breakpoints.
+   * Default false.
+   */
+  marqueeStickyDesktop: boolean;
 };
 
 export type FeatureCardPins = {
@@ -137,6 +143,7 @@ export const DEFAULT_MARKETING_PAGE: MarketingPageContent = {
     marqueeEnabled: true,
     marqueeScroll: true,
     marqueeFadeLeft: false,
+    marqueeStickyDesktop: false,
   },
   features: {
     sectionLabel: '// 01 — Engineering',
@@ -228,7 +235,10 @@ function pickString(x: unknown, fallback: string): string {
 }
 
 function pickBoolean(x: unknown, fallback: boolean): boolean {
-  return typeof x === 'boolean' ? x : fallback;
+  if (typeof x === 'boolean') return x;
+  if (x === 1 || x === '1' || x === 'true' || x === 'on' || x === 'yes') return true;
+  if (x === 0 || x === '0' || x === 'false' || x === 'off' || x === 'no') return false;
+  return fallback;
 }
 
 function pickSegments(x: unknown, fallback: TextSegment[]): TextSegment[] {
@@ -291,6 +301,7 @@ function pickHero(p: unknown, d: HeroContent): HeroContent {
     marqueeEnabled: pickBoolean(o.marqueeEnabled, d.marqueeEnabled),
     marqueeScroll: pickBoolean(o.marqueeScroll, d.marqueeScroll),
     marqueeFadeLeft: pickBoolean(o.marqueeFadeLeft, d.marqueeFadeLeft),
+    marqueeStickyDesktop: pickBoolean(o.marqueeStickyDesktop, d.marqueeStickyDesktop),
   };
 }
 

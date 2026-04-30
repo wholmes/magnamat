@@ -18,6 +18,9 @@
   --nav-chrome: var(--page);
   /* Top-right black vignette — nav + hero share; fixed = viewport-aligned */
   --corner-vignette: radial-gradient(ellipse 110% 80% at 92% 6%, rgba(0, 0, 0, 0.42) 0%, transparent 52%);
+  /* Fixed nav: inner row + 1px bottom border — hero `padding-top`, anchor scroll-padding, sticky marquee `top` */
+  --site-nav-inner-height: 66px;
+  --site-nav-bar-offset: calc(var(--site-nav-inner-height) + 1px);
 }
 
 /* Nav bar only — body, hero, and sections unchanged */
@@ -35,7 +38,7 @@ html[data-nav-bg="mist"] {
 html {
   scroll-behavior: smooth;
   /* Fixed nav: in-page anchors (#features, etc.) land with room below the bar */
-  scroll-padding-top: 76px;
+  scroll-padding-top: calc(var(--site-nav-bar-offset) + 9px);
 }
 /*
  * Ambient depth — soft black radial washes (fixed “random” layout in % / vw space, not scroll-parallax).
@@ -57,7 +60,9 @@ body {
   background-size: 100% 100%;
   color: var(--ink);
   font-family: var(--font-barlow), sans-serif;
+  /* `hidden` can break `position: sticky` for descendants in Chromium; `clip` clips x without that scrollport quirk */
   overflow-x: hidden;
+  overflow-x: clip;
 }
 
 /* Skip link — visible only when focused (keyboard / SR) */
@@ -912,7 +917,7 @@ body::after {
   grid-template-columns: 100%;
   grid-template-rows: minmax(0, 1fr) auto;
   position: relative;
-  padding-top: 66px;
+  padding-top: var(--site-nav-bar-offset);
   padding-bottom: 0;
   box-sizing: border-box;
   min-height: 100vh;
@@ -1039,19 +1044,58 @@ body::after {
   border-bottom: 1px solid rgba(255, 255, 255, 0.08);
   padding: 14px max(14px, env(safe-area-inset-left, 0px)) calc(14px + env(safe-area-inset-bottom, 0px))
     max(14px, env(safe-area-inset-right, 0px));
-  overflow: hidden;
+  /* Overflow clips live on `.hero-marquee__clip` so this shell can use `position: sticky` without breaking */
+  overflow: visible;
   background: #0a0a0a;
   box-sizing: border-box;
 }
 
+.hero-marquee__clip {
+  width: 100%;
+  overflow: hidden;
+}
+
 /* Optional: fade entire strip on the left ~half (mask is relative to full ticker width) */
-.hero-marquee--fade-left {
+.hero-marquee--fade-left .hero-marquee__clip {
   -webkit-mask-image: linear-gradient(to right, transparent 0%, transparent 38%, #000 62%, #000 100%);
   mask-image: linear-gradient(to right, transparent 0%, transparent 38%, #000 62%, #000 100%);
   -webkit-mask-size: 100% 100%;
   mask-size: 100% 100%;
   -webkit-mask-repeat: no-repeat;
   mask-repeat: no-repeat;
+}
+
+/*
+ * Optional CMS: hero.marqueeStickyDesktop — lg+ only. Ticker sticks under fixed nav while the page scrolls;
+ * raise hero / lower features z-index so the strip paints above the next section when overlapping.
+ */
+@media (min-width: 1024px) {
+  .hero-above-fold--marquee-sticky-desktop {
+    z-index: 2;
+  }
+  .hero-above-fold--marquee-sticky-desktop ~ .features-specs-surface {
+    position: relative;
+    z-index: 1;
+  }
+  /* Pinned via `lib/hero-marquee-sticky.ts` (CSS sticky was unreliable); `top` from measured nav */
+  .hero-marquee--sticky-desktop.is-fixed-under-nav {
+    position: fixed;
+    left: 0;
+    right: 0;
+    top: var(--site-nav-pin-top, var(--site-nav-bar-offset));
+    z-index: 99;
+    width: 100%;
+    max-width: none;
+    margin: 0;
+    box-shadow:
+      0 1px 0 rgba(255, 255, 255, 0.12),
+      0 12px 28px -8px rgba(0, 0, 0, 0.32);
+  }
+}
+
+.hero-marquee-sticky-host {
+  width: 100%;
+  box-sizing: border-box;
 }
 
 /* Pin texture — still reads as “mat surface” on light UI */
@@ -1286,7 +1330,7 @@ body::after {
   max-width: 1300px;
   margin: 0 auto;
   padding: 0 24px;
-  height: 66px;
+  height: var(--site-nav-inner-height);
   display: flex;
   align-items: center;
   justify-content: space-between;

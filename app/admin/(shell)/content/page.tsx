@@ -21,7 +21,12 @@ export default async function AdminMarketingContentPage() {
         <code style={{ fontSize: 12 }}>false</code> to keep the strip but stop horizontal motion (otherwise omit or use{' '}
         <code style={{ fontSize: 12 }}>true</code>). Set <code style={{ fontSize: 12 }}>hero.marqueeFadeLeft</code> to{' '}
         <code style={{ fontSize: 12 }}>true</code> for a soft mask so the left side of the ticker fades out fully toward the
-        viewport edge. Use <code style={{ fontSize: 12 }}>features.introBody</code> for the paragraph under the features
+        viewport edge. Set <code style={{ fontSize: 12 }}>hero.marqueeStickyDesktop</code> to <code style={{ fontSize: 12 }}>true</code>{' '}
+        so the hero ticker pins flush under the fixed nav (inner bar + border, see{' '}
+        <code style={{ fontSize: 12 }}>--site-nav-bar-offset</code> in <code style={{ fontSize: 12 }}>css/styles.css</code>) on
+        desktop (≥1024px) while you scroll; ignored when{' '}
+        <code style={{ fontSize: 12 }}>hero.marqueeEnabled</code> is <code style={{ fontSize: 12 }}>false</code>. Use{' '}
+        <code style={{ fontSize: 12 }}>features.introBody</code> for the paragraph under the features
         headline (omit or empty string to hide). The Mug / 3D Model preset bar under the features 3D viewer is off unless you
         set <code style={{ fontSize: 12 }}>features.showPrintPresetToolbar</code> to <code style={{ fontSize: 12 }}>true</code>{' '}
         (older <code style={{ fontSize: 12 }}>printPresetToolbar</code> keys in saved JSON are ignored).
